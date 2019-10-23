@@ -1,0 +1,43 @@
+Goal 				::= (FunctionDeclaration)* MainFunction (FunctionDefinition)* <EOF>
+
+FunctionSignature	::= Type Identifier "(" (Type Identifier ("," Type Identifier)*))? ")"
+
+FunctionDeclaration ::= FunctionSignature ";"
+
+FunctionDefinition	::=	FunctionSignature "{" FunctionBody "}"
+
+FunctionBody 		::= (VarDeclaration)* (Statement)* "return" Expression
+
+MainFunction 		::= "int" "main" "(" "int" Identifier "," "char" "*" Identifier "[" "]" ")" "{" FunctionBody "}"
+
+Type				::= "int" "[" "]"
+						| "char" "[" "]"
+						| BasicType
+						
+VarDeclaration		::= DataType Identifier ";"
+
+DataType		 	::= "int" "[" <INTEGER_LITERAL> "]"
+						| "char" "[" <INTEGER_LITERAL> "]"
+						| BasicType
+						
+Statement			::= "{" (Statement)* "}"
+						| "if" "(" Expression ")" Statement "else" Statement
+						| "while" "(" Expression ")" Statement
+						| Identifier "=" Expression ";"
+						| Identifier "[" Expression "]" "=" Expression ";"
+						
+Expression 			::= Expression ( "&&" | "||" | "!=" | "==" | "<" | ">" | "+" | "-" | "*") Expression
+						| Expression "[" Expression "]"
+						| Identifier "(" (Expression ("," Expression)*)? ")"
+						| <INTEGER_LITERAL>
+						| "true"
+						| "false"
+						| Identifier
+						| "!" Expression
+						| "(" Expression ")"
+
+BasicType			::= "int"
+						| "char"
+						| "boolean"
+						
+Identifier			::= <IDENTIFIER>
