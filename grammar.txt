@@ -1,6 +1,6 @@
 Goal 				::= (FunctionDeclaration)* MainFunction (FunctionDefinition)* <EOF>
 
-FunctionSignature	::= ReturnableType Identifier "(" (Type Identifier ("," Type Identifier)*))? ")"
+FunctionSignature	::= SignatureType Identifier "(" (SignatureType Identifier ("," SignatureType Identifier)*))? ")"
 
 FunctionDeclaration ::= FunctionSignature ";"
 
@@ -16,7 +16,7 @@ Type				::= StackArray
 						| HeapArray
 						| BasicType
 
-ReturnableType 		::= BasicType 
+SignatureType 		::= BasicType 
 						| HeapArray
 
 BasicType			::= "int"
@@ -37,7 +37,6 @@ Statement			::= "{" (Statement)* "}"
 						
 Expression 			::= Expression ("&&" | "||" | "!=" | "==" | "<" | "<=" | ">" | ">=" | "+" | "-" | "*") Expression
 						| Expression "[" Expression "]"
-						| length "(" Identifier ")"
 						| Identifier "(" (Expression ("," Expression)*)? ")"
 						| <INTEGER_LITERAL>
 						| "true"
