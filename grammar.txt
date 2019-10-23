@@ -1,6 +1,6 @@
 Goal 				::= (FunctionDeclaration)* MainFunction (FunctionDefinition)* <EOF>
 
-FunctionSignature	::= Type Identifier "(" (Type Identifier ("," Type Identifier)*))? ")"
+FunctionSignature	::= ReturnableType Identifier "(" (Type Identifier ("," Type Identifier)*))? ")"
 
 FunctionDeclaration ::= FunctionSignature ";"
 
@@ -9,35 +9,44 @@ FunctionDefinition	::=	FunctionSignature "{" FunctionBody "}"
 FunctionBody 		::= (VarDeclaration)* (Statement)* "return" Expression
 
 MainFunction 		::= "int" "main" "(" "int" Identifier "," "char" "*" Identifier "[" "]" ")" "{" FunctionBody "}"
+	
+VarDeclaration		::= Type Identifier ";"
 
-Type				::= "int" "[" "]"
+Type				::= StackArray
+						| HeapArray
+						| BasicType
+
+ReturnableType 		::= BasicType 
+						| HeapArray
+
+BasicType			::= "int"
+						| "char"
+						| "boolean"
+						
+StackArray 			::= "int" "[" <INTEGER_LITERAL> "]"
+						| "char" "[" <INTEGER_LITERAL> "]" 	
+						
+HeapArray 			::= "int" "[" "]"
 						| "char" "[" "]"
-						| BasicType
-						
-VarDeclaration		::= DataType Identifier ";"
 
-DataType		 	::= "int" "[" <INTEGER_LITERAL> "]"
-						| "char" "[" <INTEGER_LITERAL> "]"
-						| BasicType
-						
 Statement			::= "{" (Statement)* "}"
 						| "if" "(" Expression ")" Statement "else" Statement
 						| "while" "(" Expression ")" Statement
 						| Identifier "=" Expression ";"
 						| Identifier "[" Expression "]" "=" Expression ";"
 						
-Expression 			::= Expression ( "&&" | "||" | "!=" | "==" | "<" | ">" | "+" | "-" | "*") Expression
+Expression 			::= Expression ("&&" | "||" | "!=" | "==" | "<" | "<=" | ">" | ">=" | "+" | "-" | "*") Expression
 						| Expression "[" Expression "]"
+						| length "(" Identifier ")"
 						| Identifier "(" (Expression ("," Expression)*)? ")"
 						| <INTEGER_LITERAL>
 						| "true"
 						| "false"
 						| Identifier
+						| "new" "int" "[" Expression "]"
+						| "new "char" "[" Expression "]"
+						| "free" Identifier
 						| "!" Expression
 						| "(" Expression ")"
 
-BasicType			::= "int"
-						| "char"
-						| "boolean"
-						
 Identifier			::= <IDENTIFIER>
