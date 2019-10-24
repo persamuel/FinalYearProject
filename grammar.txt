@@ -35,7 +35,7 @@ Statement			::= "{" (Statement)* "}"
 						| Identifier "=" Expression ";"
 						| Identifier "[" Expression "]" "=" Expression ";"
 						| "free" Identifier ";"
-						| "print" "(" Expression ")"
+						| "print" "(" Expression ")" ";"
 						
 Expression 			::= Expression ("&&" | "||" | "!=" | "==" | "<" | "<=" | ">" | ">=" | "+" | "-" | "*") Expression
 						| Expression "[" Expression "]"
