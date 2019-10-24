@@ -1,0 +1,101 @@
+import java_cup.runtime.*;
+
+/* Preliminaries to set up and use the scanner. */
+
+init with {: scanner.init(); 				:};
+scan with {: return scanner.next_token();	:};
+
+/* Terminals (tokens returned by the scanner). */
+
+terminal 			AND, OR, NOT;
+terminal 			NOTEQ, EQEQ, LT, LTE, GT, GTE;
+terminal			EQ, PLUS, MINUS, STAR;
+terminal			LBRACK, RBRACK, LPAREN, RPAREN, LBRACE, RBRACE;
+terminal			INT, CHAR, BOOL;
+terminal			IF, ELSE, WHILE, NEW, FREE, PRINT;
+terminal			SEMICOLON, COMMA;
+terminal			MAIN, RETURN;
+
+terminal Integer	INTEGER_LITERAL;
+terminal Character	CHARACTER_LITERAL;
+terminal Boolean	BOOLEAN_LITERAL;
+terminal String		IDENTIFIER;
+
+/* Non-terminals */
+
+nonterminal ;
+
+/* Precedences */
+
+start with program;
+
+/* Grammar */
+
+program 					::= function_declaration_list main_function function_definition_list;
+
+function_declaration_list	::= function_declaration function_declaration_list
+								|
+								;
+
+function_declaration 		::= function_signature SEMICOLON;
+
+function_definition_list	::=	function_definition function_definition_list
+								|
+								;
+
+function_definition			::= function_signature LBRACE function_body RBRACE
+
+function_signature			::= signature_type IDENTIFIER LPAREN formals RPAREN
+
+formals 					::= parameter_list
+								|
+								;
+
+parameter_list				::= parameter
+								| parameter COMMA parameter_list;
+			
+parameter 					::= signature_type IDENTIFIER;
+
+function_body				::= variable_declaration_list statement_list RETURN expression
+
+variable_declaration_list	::= variable_declaration variable_declaration_list
+								|
+								;
+
+variable_declaration		::= type IDENTIFIER SEMICOLON
+
+statement_list				::= statement statement_list
+								|
+								;
+
+statement					::= LBRACE statement_list RBRACE
+								| IF LPAREN expression RPAREN statement ELSE statement
+								| WHILE LPAREN expression RPAREN statement
+								| PRINT LPAREN expression RPAREN SEMICOLON
+								| IDENTIFIER EQ expression SEMICOLON
+								| IDENTIFIER LBRACK expression RBRACK EQ expression SEMICOLON
+
+expression_list				::=
+
+expression					::= 
+
+expression_new				::= 
+
+expression_no_new			::=
+
+type						::= stack_array
+								| heap_array
+								| basic_type;
+
+signature_type				::= basic_type
+								| heap_array;
+								
+basic_type					::= INT
+								| CHAR
+								| BOOL;
+								
+stack_array					::= INT LBRACK INTEGER_LITERAL RBRACK
+								| CHAR LBRACK INTEGER_LITERAL RBRACK;
+
+heap_array					::= INT LBRACK RBRACK
+								| CHAR LBRACK RBRACK;

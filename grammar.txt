@@ -41,9 +41,8 @@ Expression 			::= Expression ("&&" | "||" | "!=" | "==" | "<" | "<=" | ">" | ">=
 						| Expression "[" Expression "]"
 						| Identifier "(" (Expression ("," Expression)*)? ")"
 						| <INTEGER_LITERAL>
-						| "'" <CHARACTER_LITERAL> "'"
-						| "true"
-						| "false"
+						| <CHARACTER_LITERAL>
+						| <BOOLEAN_LITERAL>
 						| Identifier
 						| "new" "int" "[" Expression "]"
 						| "new "char" "[" Expression "]"
