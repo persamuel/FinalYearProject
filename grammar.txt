@@ -35,11 +35,13 @@ Statement			::= "{" (Statement)* "}"
 						| Identifier "=" Expression ";"
 						| Identifier "[" Expression "]" "=" Expression ";"
 						| "free" Identifier ";"
+						| "print" "(" Expression ")"
 						
 Expression 			::= Expression ("&&" | "||" | "!=" | "==" | "<" | "<=" | ">" | ">=" | "+" | "-" | "*") Expression
 						| Expression "[" Expression "]"
 						| Identifier "(" (Expression ("," Expression)*)? ")"
 						| <INTEGER_LITERAL>
+						| "'" <CHARACTER_LITERAL> "'"
 						| "true"
 						| "false"
 						| Identifier
