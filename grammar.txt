@@ -14,12 +14,12 @@ VarDeclaration		::= Type Identifier ";"
 
 Type				::= StackArray
 						| HeapArray
-						| BasicType
+						| PrimitiveType
 
-SignatureType 		::= BasicType 
+SignatureType 		::= PrimitiveType 
 						| HeapArray
 
-BasicType			::= "int"
+PrimitiveType			::= "int"
 						| "char"
 						| "boolean"
 						
