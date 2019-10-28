@@ -1,9 +1,13 @@
 int strcpy(char[] src, char[] dest);
 
 int main(int argc, char[][] argv) {
+    int tmp;
     char[500] buf;
-    strcpy(argv[1], buf);
+
+    tmp = strcpy(argv[1], buf);
     print(buf);
+
+    return 0;
 }
 
 int strcpy(char[] src, char[] dest) {

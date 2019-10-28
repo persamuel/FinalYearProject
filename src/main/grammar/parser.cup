@@ -33,6 +33,7 @@ nonterminal				function_body;
 nonterminal				variable_declaration_list;
 nonterminal				variable_declaration;
 nonterminal				statement;
+nonterminal				statements;
 nonterminal				statement_list;
 nonterminal				expression;
 nonterminal				args;
@@ -97,7 +98,7 @@ parameter_list				::= parameter_list COMMA parameter
 			
 parameter 					::= signature_type IDENTIFIER;
 
-function_body				::= variable_declaration_list statement_list RETURN expression;
+function_body				::= variable_declaration_list statements RETURN expression SEMICOLON;
 
 variable_declaration		::= type IDENTIFIER SEMICOLON;
 
@@ -114,7 +115,11 @@ statement					::= LBRACE statement_list RBRACE
 								| PRINT LPAREN expression RPAREN SEMICOLON
 								;
 
-statement_list				::= statement statement_list
+statements                  ::= statement_list
+                                |
+                                ;
+
+statement_list				::= statement_list statement
 								| statement
 								;
 

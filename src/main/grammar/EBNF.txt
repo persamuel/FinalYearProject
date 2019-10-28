@@ -6,7 +6,7 @@ FunctionDeclaration ::= FunctionSignature ";"
 
 FunctionDefinition	::=	FunctionSignature "{" FunctionBody "}"
 
-FunctionBody 		::= (VarDeclaration)* (Statement)* "return" Expression
+FunctionBody 		::= (VarDeclaration)* (Statement)* "return" Expression ";"
 
 MainFunction 		::= "int" "main" "(" "int" Identifier "," "char" "[" "]" "[" "]" Identifier ")" "{" FunctionBody "}"
 	
