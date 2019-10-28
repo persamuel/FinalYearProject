@@ -1,0 +1,17 @@
+int ComputeFactorial(int num);
+
+int main(int argc, char[][] argv) {
+    print(ComputeFactorial(10));
+    return 0;
+}
+
+int ComputeFactorial(int num) {
+    int num_aux;
+
+    if (num < 1)
+        num_aux = 1;
+    else
+        num_aux = num * (ComputeFactorial(num - 1));
+
+    return num_aux;
+}

@@ -1,0 +1,19 @@
+int strcpy(char[] src, char[] dest);
+
+int main(int argc, char[][] argv) {
+    char[500] buf;
+    strcpy(argv[1], buf);
+    print(buf);
+}
+
+int strcpy(char[] src, char[] dest) {
+    int i;
+    i = 0;
+
+    while (src[i] != 0) {
+        dest[i] = src[i];
+        i = i + 1;
+    }
+
+    return 1;
+}
