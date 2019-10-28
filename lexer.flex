@@ -1,3 +1,0 @@
-import java_cup.runtime.*;
-
-%%
