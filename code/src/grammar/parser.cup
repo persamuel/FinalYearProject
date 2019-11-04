@@ -1,0 +1,178 @@
+import java_cup.runtime.*;
+
+/* Terminals (tokens returned by the scanner). */
+
+terminal 				AND, OR, NOT;
+terminal 				NOTEQ, EQEQ, LT, LTE, GT, GTE;
+terminal				EQ, PLUS, MINUS, MULTI;
+terminal				LBRACK, RBRACK, LPAREN, RPAREN, LBRACE, RBRACE;
+terminal				INT, CHAR, BOOL;
+terminal				IF, ELSE, WHILE, NEW, FREE, PRINT;
+terminal				SEMICOLON, COMMA;
+terminal				MAIN, RETURN;
+
+terminal Integer		INTEGER_LITERAL;
+terminal Character		CHARACTER_LITERAL;
+terminal Boolean		BOOLEAN_LITERAL;
+terminal String			IDENTIFIER;
+
+/* Non-terminals */
+
+nonterminal				goal;
+nonterminal 			program;
+nonterminal				main_function;
+nonterminal				function_declaration_list;
+nonterminal				function_declaration;
+nonterminal				function_definition_list;
+nonterminal				function_definition;
+nonterminal				function_signature;
+nonterminal				formals;
+nonterminal				parameter_list;
+nonterminal				parameter;
+nonterminal				function_body;
+nonterminal				variable_declaration_list;
+nonterminal				variable_declaration;
+nonterminal				statement;
+nonterminal				statements;
+nonterminal				statement_list;
+nonterminal				expression;
+nonterminal				args;
+nonterminal				expression_list;
+nonterminal				type;
+nonterminal				signature_type;
+nonterminal				primitive_type;
+nonterminal				stack_array;
+nonterminal				heap_array;
+
+/* Precedences */
+
+precedence left			LBRACK, RBRACK;
+precedence right 		NOT;
+precedence left 		MULTI;
+precedence left 		PLUS, MINUS;
+precedence left 		LT, LTE, GT, GTE;
+precedence left 		EQEQ, NOTEQ;
+precedence left 		AND;
+precedence left 		OR;
+
+/* Grammar */
+
+start with program;
+
+/* Problem: 	Parser doesn't know if INT starts the main function or a declaration with just - "function_declaration_list main_function function_definition_list"
+ * Solution:	Must include main function so it's just a question of rearraging productions, see ans: https://stackoverflow.com/questions/25185601/shift-reduce-error-with-cup
+ * 				(Now lookahead can see if it is "main" or an IDENTIFIER after shifting an INT).
+ */
+
+
+program 					::= function_declaration_list:decls main_function:main function_definition_list:defs    {: RESULT = new Program(decls, main, defs); :}
+								| main_function:main {: RESULT = new Program(main); :}
+								;
+
+main_function				::= INT MAIN LPAREN INT IDENTIFIER:argc COMMA CHAR LBRACK RBRACK LBRACK RBRACK
+                                IDENTIFIER:argv RPAREN LBRACE function_body:body RBRACE                             {: RESULT = new Main(argc, argv, body); :};
+
+/* Note: 		Left recursion for "lists" in a LR parser uses less parser stack so it is preferable. */
+
+function_declaration_list	::= function_declaration_list:decls function_declaration:decl                           {: decls.add(decl); RESULT = decl; :}
+								| function_declaration:decl                                                         {: RESULT = (new LinkedList<FunctionDeclaration>()).add(decl); :}
+								;
+								
+function_declaration 		::= function_signature:sgnt SEMICOLON                                                   {: RESULT = new FunctionDeclaration(sgnt); :};
+						
+function_definition_list	::=	function_definition_list:defs function_definition:def                               {: defs.add(def); RESULT = defs; :}
+								| function_definition:def                                                           {: RESULT = (new LinkedList<FunctionDefinition>()).add(def); :}
+								;
+	
+function_definition			::= function_signature:sgnt LBRACE function_body:body RBRACE                            {: RESULT = new FunctionDefintion(sgnt, body); :};
+
+function_signature			::= signature_type:type IDENTIFIER:name LPAREN formals:args RPAREN                      {: RESULT = new FunctionSignature(type, name, args); :};
+
+formals 					::= parameter_list:params                                                               {: RESULT = params; :}
+								|
+								;
+
+parameter_list				::= parameter_list:params COMMA parameter:param                                         {: params.add(param); RESULT = params; :}
+								| parameter:param                                                                   {: RESULT = (new LinkedList<Parameter>()).add(param); :}
+								;
+			
+parameter 					::= signature_type:type IDENTIFIER:id                                                   {: RESULT = new Parameter(type, id); :};
+
+
+function_body				::= variable_declaration_list statements RETURN expression SEMICOLON;
+
+variable_declaration		::= type IDENTIFIER SEMICOLON;
+
+variable_declaration_list	::= variable_declaration_list variable_declaration
+								|
+								;
+
+statement					::= LBRACE statement_list RBRACE
+								| IF LPAREN expression RPAREN statement ELSE statement
+								| WHILE LPAREN expression RPAREN statement
+								| IDENTIFIER EQ expression SEMICOLON
+								| IDENTIFIER LBRACK expression RBRACK EQ expression SEMICOLON
+								| FREE IDENTIFIER SEMICOLON
+								| PRINT LPAREN expression RPAREN SEMICOLON
+								;
+
+statements                  ::= statement_list
+                                |
+                                ;
+
+statement_list				::= statement_list statement
+								| statement
+								;
+
+expression					::= expression AND expression
+								| expression OR expression
+								| expression NOTEQ expression
+								| expression EQEQ expression
+								| expression LT expression
+								| expression LTE expression
+								| expression GT expression
+								| expression GTE expression
+								| expression PLUS expression
+								| expression MINUS expression
+								| expression MULTI expression
+								| expression LBRACK expression RBRACK
+								| IDENTIFIER LPAREN args RPAREN
+								| INTEGER_LITERAL
+								| CHARACTER_LITERAL
+								| BOOLEAN_LITERAL
+								| IDENTIFIER
+								| NEW INT LBRACK expression RBRACK
+								| NEW CHAR LBRACK expression RBRACK
+								| NOT expression
+								| LPAREN expression RPAREN
+								;
+
+args						::= expression_list
+								|
+								;
+
+expression_list				::= expression_list COMMA expression
+								| expression
+								;
+
+type						::= stack_array
+								| heap_array
+								| primitive_type
+								;
+
+signature_type				::= primitive_type
+								| heap_array
+								;
+								
+primitive_type				::= INT
+								| CHAR
+								| BOOL
+								;
+								
+stack_array					::= INT LBRACK INTEGER_LITERAL RBRACK
+								| CHAR LBRACK INTEGER_LITERAL RBRACK
+								;
+
+heap_array					::= INT LBRACK RBRACK
+								| CHAR LBRACK RBRACK
+								;

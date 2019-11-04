@@ -1,0 +1,17 @@
+int factorial(int num);
+
+int main(int argc, char[][] argv) {
+    print(factorial(5));
+    return 0;
+}
+
+int factorial(int num) {
+    int aux;
+
+    if (num < 1)
+        aux = 1;
+    else
+        aux = num * (factorial(num - 1));
+
+    return aux;
+}
