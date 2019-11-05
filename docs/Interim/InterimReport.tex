@@ -80,8 +80,8 @@ However, this attack type of attack was realised and fairly easily defended agai
 ROP is among one of the methods of effectively sidestepping this defense. The core idea behind it and many other such attacks is to execute pre-existing sequences without this NX/XD flag, rather than find a way to turn it off.
 \\
 \\
-However, one of the main challenges in this approach is to find such desirable sequences that an attacker would want to execute. In terms of ROP these sequences are called gadgets and use of them requires a little arranging beforehand. The structure of a gadget is simply a sequence of code that is guaranteed to execute its final instruction, that is the ret instruction.
-
+However, one of the main challenges in this approach is to find such desirable sequences that an attacker would want to execute. In terms of ROP these sequences are called gadgets and use of them requires a little arranging beforehand. The structure of a gadget is simply a sequence of code that is guaranteed to execute its final instruction, that is the return (``ret'') instruction.
+\\
 \begin{figure}[h]
 \centering
 \begin{tabular}{r|c|l}
@@ -108,18 +108,38 @@ Start of Array $\rightarrow$ && \\
 && Low Memory Address \\
 \end{tabular}
 \label{ROP-diagram}
-\caption{}
+\caption{Example Prepped ROP Stack}
 \end{figure}
+\\
+What ``ret'' does, is it pulls an address off the stack and starts executing the instructions from there. Therefore, if several addresses are placed consecutively in memory like what is shown above. Since all the gadgets end in ``ret'', what will end up happening is the body of the gadgets will run one after the other with the ``ret'' chaining them together. Each ``ret'' at the end of the gadget will pull the next address of the stack, and start the whole process again from there. Because the gadget bodies are also executed, through careful arrangement this allows arbitrary code execution to be performed.
 
 \subsubsection{Components of a Toy Compiler}
 
-\textbf{The Lexer and Parser:}
+This section will be giving a short overview of the components necessary to implement the compiler for the language given in~\ref{sec:grammar}.
+\\
+\\
+\textbf{The Lexer:}
+\\
+\\
+The job of the lexer is simply to tokenise the input. The computer sees code as a long list of characters e.g. [ `i', `n', `t', ` `, `x', `=' ]. As one would imagine this is rather inconvenient to work with. So to tokenise is to take this list of characters and produce a list of corresponding tokens with the useless info removed i.e. whitespace and comments. A tokenise example from above is as such [ INT, x, EQ ].
+\\
+\\
+\textbf{The Parser:}
+\\
+\\
+The job of the parser is to take the tokens given from the lexer, and produce an easy to work with structure that captures the essence of the program that was written. There are several parser tools available that take a grammar not too dissimilar from~\ref{sec:grammar} and automate this process. In this project the Java CUP parser [ref needed] is one such tool that will be used. 
+\\
 \\
 \textbf{The Type Checker:}
 \\
+\\
+Essentially the job of the type checker is to catch all semantic errors in the program structure (given by the parser) that may have been made. For example the programmer might try to assign True to a variable that holds an integer. Obviously for safety reasons the code should not move past this phase. The way this will be accomplished is through the use of a common design pattern known as the Visitor pattern [ref needed].  
+\\
+\\
 \textbf{The Code Generator:}
-
-\subsection{Software Engineering Considerations} 
+\\
+\\
+Finally and perhaps the most self explanatory phase is code generation. The code generator operates on the same structure after type checking is successful, and produces correct machine code that is able to be run directly on the computer. A point to note is that as this is a toy compiler no optimisations of such code will be attempted in this project.
 
 \subsection{Aims}
 
@@ -129,7 +149,7 @@ One of the primary aims of this project will be to implement a compiler for the 
 An additional aim for this project will be to target the x86-64 assembly language for the compiler output. This architecture is chosen since it is the easiest to perform ROP exploits on. This is due to the fact that boundaries on instruction sizes aren't enforce like they are in other architectures such as MIPS.
 \\
 \\
-A final aim for this project is to target the exploit to run on a virtualised Linux distro. Initially this distro will have defenses such as ASLR disabled, but as the project progresses the aim is to ultimately run the ROP exploit with the defenses in place. However, this is relegated to the extensions phase of the project as one of the first to be attempted.
+A final aim for this project is to target the exploit to run on a virtualised Linux distro. Initially this distro will have other defenses such as ASLR (not mentioned in this report)  disabled, but as the project progresses the aim is to ultimately run the ROP exploit with the defenses in place. However, this is relegated to the extensions phase of the project as one of the first to be attempted.
 
 \subsection{Objectives}
 
@@ -145,16 +165,36 @@ A final aim for this project is to target the exploit to run on a virtualised Li
 
 \subsection{Project Relevance} % Why is it important
 
-% Compilers 
+% 
+
+\section{Software Engineering Considerations} 
+
+% Using Github to track progress
+% Running compiled code in an emulated x86-64 enviroment e.g. https://www.unicorn-engine.org/ which will allow for testing of my languages correctness 
+% Essentially Oracle style testing of precomputing results of several programs and comparing actual output
+% Running exploit in a virtual machine.
 
 \section{Professional and Ethical Considerations}
+
+% This project potentially could be used to help exploit systems. Reinforces idea that there should be no users.
+% Extension may include a runtime monitor for detecting this 
+% No human participants.
+
+\section{Requirements Analysis}
+
+\subsubsection{Non-Functional Requirements}
+
+\subsubsection{Functional Requirements}
+
+\subsubsection{Domain Requirements}
 
 \section{Related Work}
 
 % Original paper
 % ROP compiler github (more like a rop assembler) will be attempting something like this in extension if possible
-
-\section{Requirements Analysis}
+% How mine contributes:
+% Extension of ROP detection could help combat this attack
+% Extension of Gadget Compiler could help building such attacks
 
 \newpage
 
