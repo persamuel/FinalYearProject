@@ -18,7 +18,6 @@ terminal String			IDENTIFIER;
 
 /* Non-terminals */
 
-nonterminal				goal;
 nonterminal 			program;
 nonterminal				main_function;
 nonterminal				function_declaration_list;
@@ -64,9 +63,8 @@ start with program;
  * 				(Now lookahead can see if it is "main" or an IDENTIFIER after shifting an INT).
  */
 
-
 program 					::= function_declaration_list:decls main_function:main function_definition_list:defs    {: RESULT = new Program(decls, main, defs); :}
-								| main_function:main {: RESULT = new Program(main); :}
+								| main_function:main                                                                {: RESULT = new Program(main); :}
 								;
 
 main_function				::= INT MAIN LPAREN INT IDENTIFIER:argc COMMA CHAR LBRACK RBRACK LBRACK RBRACK
@@ -75,13 +73,17 @@ main_function				::= INT MAIN LPAREN INT IDENTIFIER:argc COMMA CHAR LBRACK RBRAC
 /* Note: 		Left recursion for "lists" in a LR parser uses less parser stack so it is preferable. */
 
 function_declaration_list	::= function_declaration_list:decls function_declaration:decl                           {: decls.add(decl); RESULT = decl; :}
-								| function_declaration:decl                                                         {: RESULT = (new LinkedList<FunctionDeclaration>()).add(decl); :}
+								| function_declaration:decl                                                         {: LinkedList<FunctionDeclaration> list = new LinkedList<>();
+								                                                                                        list.add(decl);
+								                                                                                        RESULT = list; :}
 								;
 								
 function_declaration 		::= function_signature:sgnt SEMICOLON                                                   {: RESULT = new FunctionDeclaration(sgnt); :};
 						
 function_definition_list	::=	function_definition_list:defs function_definition:def                               {: defs.add(def); RESULT = defs; :}
-								| function_definition:def                                                           {: RESULT = (new LinkedList<FunctionDefinition>()).add(def); :}
+								| function_definition:def                                                           {: LinkedList<FunctionDefinition> list = new LinkedList<>();
+								                                                                                        list.add(def);
+                                                                                                                        RESULT = new LinkedList<FunctionDefinition>(); :}
 								;
 	
 function_definition			::= function_signature:sgnt LBRACE function_body:body RBRACE                            {: RESULT = new FunctionDefintion(sgnt, body); :};
@@ -89,87 +91,92 @@ function_definition			::= function_signature:sgnt LBRACE function_body:body RBRA
 function_signature			::= signature_type:type IDENTIFIER:name LPAREN formals:args RPAREN                      {: RESULT = new FunctionSignature(type, name, args); :};
 
 formals 					::= parameter_list:params                                                               {: RESULT = params; :}
-								|
+								|                                                                                   {: RESULT = new LinkedList<Parameter>(); :}
 								;
 
 parameter_list				::= parameter_list:params COMMA parameter:param                                         {: params.add(param); RESULT = params; :}
-								| parameter:param                                                                   {: RESULT = (new LinkedList<Parameter>()).add(param); :}
+								| parameter:param                                                                   {: LinkedList<Parameter> list = new LinkedList<>();
+								                                                                                        list.add(param);
+								                                                                                        RESULT = list; :}
 								;
 			
 parameter 					::= signature_type:type IDENTIFIER:id                                                   {: RESULT = new Parameter(type, id); :};
 
+function_body				::= variable_declaration_list:vars statements:stms RETURN expression:ret SEMICOLON      {: RESULT = new FunctionBody(vars, stms, ret); :};
 
-function_body				::= variable_declaration_list statements RETURN expression SEMICOLON;
+variable_declaration		::= type:type IDENTIFIER:id SEMICOLON                                                   {: RESULT = new VariableDeclaration(type, id); :};
 
-variable_declaration		::= type IDENTIFIER SEMICOLON;
-
-variable_declaration_list	::= variable_declaration_list variable_declaration
-								|
+variable_declaration_list	::= variable_declaration_list:vars variable_declaration:var                             {: vars.add(var); RESULT = vars; :}
+								|                                                                                   {: RESULT = new LinkedList<FunctionDefinition>(); :}
 								;
 
-statement					::= LBRACE statement_list RBRACE
-								| IF LPAREN expression RPAREN statement ELSE statement
-								| WHILE LPAREN expression RPAREN statement
-								| IDENTIFIER EQ expression SEMICOLON
-								| IDENTIFIER LBRACK expression RBRACK EQ expression SEMICOLON
-								| FREE IDENTIFIER SEMICOLON
-								| PRINT LPAREN expression RPAREN SEMICOLON
+statement					::= LBRACE statement_list:stms RBRACE                                                   {: RESULT = new Statement.Compound(stms); :}
+								| IF LPAREN expression:cond RPAREN statement:then ELSE statement:els                {: RESULT = new Statement.IfThenElse(cond, then, els); :}
+								| WHILE LPAREN expression:cond RPAREN statement:body                                {: RESULT = new Statement.While(cond, body); :}
+								| IDENTIFIER:id EQ expression:val SEMICOLON                                         {: RESULT = new Statement.Assign(id, val); :}
+								| IDENTIFIER:id LBRACK expression:idx RBRACK EQ expression:val SEMICOLON            {: RESULT = new Statement.ArrayAssign(id, idx, val); :}
+								| FREE IDENTIFIER:id SEMICOLON                                                      {: RESULT = new Statement.Free(id); :}
+								| PRINT LPAREN expression:val RPAREN SEMICOLON                                      {: RESULT = new Statement.Print(val); :}
 								;
 
-statements                  ::= statement_list
-                                |
+statements                  ::= statement_list:stms                                                                 {: RESULT = stms; :}
+                                |                                                                                   {: RESULT = new LinkedList<Statement>(); :}
                                 ;
 
-statement_list				::= statement_list statement
-								| statement
+statement_list				::= statement_list:stms statement:stm                                                   {: stms.add(stm); RESULT = stms; :}
+								| statement:stm                                                                     {: LinkedList<Statement> list = new LinkedList<>();
+								                                                                                        list.add(stm);
+								                                                                                        RESULT = list; :}
 								;
 
-expression					::= expression AND expression
-								| expression OR expression
-								| expression NOTEQ expression
-								| expression EQEQ expression
-								| expression LT expression
-								| expression LTE expression
-								| expression GT expression
-								| expression GTE expression
-								| expression PLUS expression
-								| expression MINUS expression
-								| expression MULTI expression
-								| expression LBRACK expression RBRACK
-								| IDENTIFIER LPAREN args RPAREN
-								| INTEGER_LITERAL
-								| CHARACTER_LITERAL
-								| BOOLEAN_LITERAL
-								| IDENTIFIER
-								| NEW INT LBRACK expression RBRACK
-								| NEW CHAR LBRACK expression RBRACK
-								| NOT expression
-								| LPAREN expression RPAREN
+expression					::= expression:lhs AND expression:rhs                                                   {: RESULT = new Expression.Logical(sym.AND, lhs, rhs); :}
+								| expression:lhs OR expression:rhs                                                  {: RESULT = new Expression.Logical(sym.OR, lhs, rhs); :}
+								| expression:lhs NOTEQ expression:rhs                                               {: RESULT = new Expression.Equality(sym.NOT, lhs, rhs); :}
+								| expression:lhs EQEQ expression:rhs                                                {: RESULT = new Expression.Equality(sym.EQEQ, rhs); :}
+								| expression:lhs LT expression:rhs                                                  {: RESULT = new Expression.Comparison(sym.LT, lhs, rhs); :}
+								| expression:lhs LTE expression:rhs                                                 {: RESULT = new Expression.Comparison(sym.LTE, lhs, rhs); :}
+								| expression:lhs GT expression:rhs                                                  {: RESULT = new Expression.Comparison(sym.GT, lhs, rhs); :}
+								| expression:lhs GTE expression:rhs                                                 {: RESULT = new Expression.Comparison(sym.GTE, lhs, rhs); :}
+								| expression:lhs PLUS expression:rhs                                                {: RESULT = new Expression.Arithmetic(sym.PLUS, lhs, rhs); :}
+								| expression:lhs MINUS expression:rhs                                               {: RESULT = new Expression.Arithmetic(sym.MINUS, lhs, rhs); :}
+								| expression:lhs MULTI expression:rhs                                               {: RESULT = new Expression.Arithmetic(sym.MULTI, rhs); :}
+								| expression:arr LBRACK expression:idx RBRACK                                       {: RESULT = new Expression.ArrayAccess(arr, idx); :}
+								| IDENTIFIER:name LPAREN args:args RPAREN                                           {: RESULT = new Expression.Call(name, args); :}
+								| INTEGER_LITERAL:val                                                               {: RESULT = new Expression.IntLiteral(val); :}
+								| CHARACTER_LITERAL:val                                                             {: RESULT = new Expression.CharLiteral(val); :}
+								| BOOLEAN_LITERAL:val                                                               {: RESULT = new Expression.BoolLiteral(val); :}
+								| IDENTIFIER:id                                                                     {: RESULT = new Expression.Identifier(id); :}
+								| NEW INT LBRACK expression:len RBRACK                                              {: RESULT = new Expression.NewArray(sym.INT, len); :}
+								| NEW CHAR LBRACK expression:len RBRACK                                             {: RESULT = new Expression.NewArray(sym.CHAR, len); :}
+								| NOT expression:exp                                                                {: RESULT = new Expression.Negated(exp); :}
+								| LPAREN expression:exp RPAREN                                                      {: RESULT = exp; :}
 								;
 
-args						::= expression_list
-								|
+args						::= expression_list:exps                                                                {: RESULT = exps; :}
+								|                                                                                   {: RESULT = new LinkedList<Expression>(); :}
 								;
 
-expression_list				::= expression_list COMMA expression
-								| expression
+expression_list				::= expression_list:exps COMMA expression:exp                                           {: exps.add(exp); RESULT = exps; :}
+								| expression:exp                                                                    {: LinkedList<Expression> list = new LinkedList<>();
+								                                                                                        list.add(exp);
+								                                                                                        RESULT = list; :}
 								;
 
-type						::= stack_array
-								| heap_array
-								| primitive_type
+type						::= stack_array:sarr                                                                    {: :}
+								| heap_array:harr
+								| primitive_type:prim
 								;
 
-signature_type				::= primitive_type
-								| heap_array
+signature_type				::= primitive_type:prim
+								| heap_array:harr
 								;
 								
-primitive_type				::= INT
+primitive_type				::= INT                                                                                 {: RESULT = new Type.NonArr(sym.INT); :}
 								| CHAR
 								| BOOL
 								;
 								
-stack_array					::= INT LBRACK INTEGER_LITERAL RBRACK
+stack_array					::= INT LBRACK INTEGER_LITERAL RBRACK                                                   {: RESULT = new Type.HeapArr(sym.INT); :}
 								| CHAR LBRACK INTEGER_LITERAL RBRACK
 								;
 

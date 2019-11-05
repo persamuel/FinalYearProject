@@ -28,10 +28,11 @@
 \subsection{Brief Introduction to the Problem Area}
 
 \subsubsection{Buffer Overflow Attacks}
+
 This section covers buffer overflow exploits, which will be the primary vector for beginning a ROP exploit in this project. To first understand the topic, a recap on stack frames in memory is needed.
 \\
 \\
-The figure below shows a simplified view\cite{AR-layout-x86-64} of what a function with one local array variable would look like in memory. One of the key concepts to grasp is that the function that called the current one sits directly higher up in memory.
+The figure below shows a simplified view of what a function with one local array variable would look like in memory \cite{AR-layout-x86-64}. One of the key concepts to grasp is that the data for function that called the current one sits directly higher up in memory.
 
 \begin{figure}[h]
 \centering
@@ -61,12 +62,26 @@ Start of Array $\rightarrow$ && \\
 \label{AR-diagram}
 \caption{General Stack Frame Layout}
 \end{figure}
-The return address is crucial to this structure. Its job is to tell the program where to go back to in the previous function after it's done in the current one. Therefore if it is able to be altered, an attacker can essentially to tell the program to start doing something else.
+\newpage
+The return address is crucial to this structure. Its job is to tell the program where to go back to in the previous function after it's done in the current one. Therefore if it is able to be altered, an attacker can essentially tell the program to start doing something else.
+\\
+\\
+Fortunately the return address is accessible with the use of the local array. Since array accesses are encoded by adding to the start of the array, an array access outside the bounds goes higher up in memory than what is usually safe. Therefore by using calculated unsafe array accesses and assignments, the return address can be altered to whatever the attacker wants.
 
-\subsubsection{NX defense}
+\subsubsection{The NX/XD defense}
 
+Typically due to the basic fact that instructions are data and vice-versa. The way that simple attacks would work is that before placing the return address, an attacker would write in the code  they want to run. Then target the return address back at this sequence that's just been written.
+\\
+\\
+However, this attack type of attack was realised and fairly easily defended against. The defense put in place relies upon the idea that the stack in memory should only be used to store data, not code to be executed. Therefore by putting a flag which disallows execution on certain regions of memory, you can effectively shutdown the attacker being able to write what they want then execute it. They can only write what they want, not execute it, hence the name No Execute (NX) or Execute Disable (XD) \cite{NX-XD-bit}.
+\newpage
 \subsubsection{ROP}
-hello
+
+ROP is among one of the methods of effectively sidestepping this defense. The core idea behind it and many other such attacks is to execute pre-existing sequences without this NX/XD flag, rather than find a way to turn it off.
+\\
+\\
+However, one of the main challenges in this approach is to find such desirable sequences that an attacker would want to execute. In terms of ROP these sequences are called gadgets and use of them requires a little arranging beforehand. The structure of a gadget is simply a sequence of code that is guaranteed to execute its final instruction, that is the ret instruction.
+
 \begin{figure}[h]
 \centering
 \begin{tabular}{r|c|l}
@@ -96,14 +111,15 @@ Start of Array $\rightarrow$ && \\
 \caption{}
 \end{figure}
 
-\subsubsection{To-do Summary}
+\subsubsection{Components of a Toy Compiler}
 
-% build compiler in scala using JFlex and CUP for front-end
-% smash stack using strcpy function written in my language
-% start off by manually inserting the gadgets nessecary
-% extend by building galileo algorithm and roping off found gadgets 
+\textbf{The Lexer and Parser:}
+\\
+\textbf{The Type Checker:}
+\\
+\textbf{The Code Generator:}
 
-\subsubsection{Software Engineering Considerations} 
+\subsection{Software Engineering Considerations} 
 
 \subsection{Aims}
 
@@ -117,6 +133,10 @@ A final aim for this project is to target the exploit to run on a virtualised Li
 
 \subsection{Objectives}
 
+% build compiler in scala using JFlex and CUP for front-end
+% smash stack using strcpy function written in my language
+% start off by manually inserting the gadgets nessecary
+% extend by building galileo algorithm and roping off found gadgets 
 
 \subsection{Motivation}
 
