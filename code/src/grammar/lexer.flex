@@ -1,4 +1,5 @@
 import java_cup.runtime.*;
+import Parser.sym;
 
 %%
 
@@ -87,7 +88,7 @@ CharacterLiteral 	= "'" [:jletter:] "'"
 		
 	/* Identifiers */
 	
-	{Identifier}				{ return symbol(sym.IDENTIFIER); }
+	{Identifier}				{ return symbol(sym.IDENTIFIER, yytext()); }
 		
 	/* Other Literals */
 	

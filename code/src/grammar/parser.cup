@@ -1,4 +1,9 @@
+package Parser;
+
 import java_cup.runtime.*;
+import Node.*;
+import java.util.LinkedList;
+import java.util.List;
 
 /* Terminals (tokens returned by the scanner). */
 
@@ -18,30 +23,30 @@ terminal String			IDENTIFIER;
 
 /* Non-terminals */
 
-nonterminal 			program;
-nonterminal				main_function;
-nonterminal				function_declaration_list;
-nonterminal				function_declaration;
-nonterminal				function_definition_list;
-nonterminal				function_definition;
-nonterminal				function_signature;
-nonterminal				formals;
-nonterminal				parameter_list;
-nonterminal				parameter;
-nonterminal				function_body;
-nonterminal				variable_declaration_list;
-nonterminal				variable_declaration;
-nonterminal				statement;
-nonterminal				statements;
-nonterminal				statement_list;
-nonterminal				expression;
-nonterminal				args;
-nonterminal				expression_list;
-nonterminal				type;
-nonterminal				signature_type;
-nonterminal				primitive_type;
-nonterminal				stack_array;
-nonterminal				heap_array;
+nonterminal Program 	                program;
+nonterminal	MainFunction                main_function;
+nonterminal	List<FunctionDeclaration>   function_declaration_list;
+nonterminal	FunctionDeclaration         function_declaration;
+nonterminal	List<FunctionDefinition>    function_definition_list;
+nonterminal	FunctionDefinition          function_definition;
+nonterminal	FunctionSignature           function_signature;
+nonterminal	List<Parameter>         	formals;
+nonterminal	List<Parameter>             parameter_list;
+nonterminal	Parameter	                parameter;
+nonterminal	FunctionBody                function_body;
+nonterminal	List<VariableDeclaration>   variable_declaration_list;
+nonterminal	VariableDeclaration		    variable_declaration;
+nonterminal	Statement	                statement;
+nonterminal	List<Statement>             statements;
+nonterminal	List<Statement>             statement_list;
+nonterminal	Expression		            expression;
+nonterminal	List<Expression>            args;
+nonterminal	List<Expression>            expression_list;
+nonterminal	Type		                type;
+nonterminal	Type			            signature_type;
+nonterminal	Type			            primitive_type;
+nonterminal	Type			            stack_array;
+nonterminal	Type			            heap_array;
 
 /* Precedences */
 
@@ -68,11 +73,11 @@ program 					::= function_declaration_list:decls main_function:main function_def
 								;
 
 main_function				::= INT MAIN LPAREN INT IDENTIFIER:argc COMMA CHAR LBRACK RBRACK LBRACK RBRACK
-                                IDENTIFIER:argv RPAREN LBRACE function_body:body RBRACE                             {: RESULT = new Main(argc, argv, body); :};
+                                IDENTIFIER:argv RPAREN LBRACE function_body:body RBRACE                             {: RESULT = new MainFunction(argc, argv, body); :};
 
 /* Note: 		Left recursion for "lists" in a LR parser uses less parser stack so it is preferable. */
 
-function_declaration_list	::= function_declaration_list:decls function_declaration:decl                           {: decls.add(decl); RESULT = decl; :}
+function_declaration_list	::= function_declaration_list:decls function_declaration:decl                           {: decls.add(decl); RESULT = decls; :}
 								| function_declaration:decl                                                         {: LinkedList<FunctionDeclaration> list = new LinkedList<>();
 								                                                                                        list.add(decl);
 								                                                                                        RESULT = list; :}
@@ -83,10 +88,10 @@ function_declaration 		::= function_signature:sgnt SEMICOLON                    
 function_definition_list	::=	function_definition_list:defs function_definition:def                               {: defs.add(def); RESULT = defs; :}
 								| function_definition:def                                                           {: LinkedList<FunctionDefinition> list = new LinkedList<>();
 								                                                                                        list.add(def);
-                                                                                                                        RESULT = new LinkedList<FunctionDefinition>(); :}
+                                                                                                                        RESULT = list; :}
 								;
 	
-function_definition			::= function_signature:sgnt LBRACE function_body:body RBRACE                            {: RESULT = new FunctionDefintion(sgnt, body); :};
+function_definition			::= function_signature:sgnt LBRACE function_body:body RBRACE                            {: RESULT = new FunctionDefinition(sgnt, body); :};
 
 function_signature			::= signature_type:type IDENTIFIER:name LPAREN formals:args RPAREN                      {: RESULT = new FunctionSignature(type, name, args); :};
 
@@ -107,7 +112,7 @@ function_body				::= variable_declaration_list:vars statements:stms RETURN expre
 variable_declaration		::= type:type IDENTIFIER:id SEMICOLON                                                   {: RESULT = new VariableDeclaration(type, id); :};
 
 variable_declaration_list	::= variable_declaration_list:vars variable_declaration:var                             {: vars.add(var); RESULT = vars; :}
-								|                                                                                   {: RESULT = new LinkedList<FunctionDefinition>(); :}
+								|                                                                                   {: RESULT = new LinkedList<VariableDeclaration>(); :}
 								;
 
 statement					::= LBRACE statement_list:stms RBRACE                                                   {: RESULT = new Statement.Compound(stms); :}
@@ -132,14 +137,14 @@ statement_list				::= statement_list:stms statement:stm                         
 expression					::= expression:lhs AND expression:rhs                                                   {: RESULT = new Expression.Logical(sym.AND, lhs, rhs); :}
 								| expression:lhs OR expression:rhs                                                  {: RESULT = new Expression.Logical(sym.OR, lhs, rhs); :}
 								| expression:lhs NOTEQ expression:rhs                                               {: RESULT = new Expression.Equality(sym.NOT, lhs, rhs); :}
-								| expression:lhs EQEQ expression:rhs                                                {: RESULT = new Expression.Equality(sym.EQEQ, rhs); :}
+								| expression:lhs EQEQ expression:rhs                                                {: RESULT = new Expression.Equality(sym.EQEQ, lhs, rhs); :}
 								| expression:lhs LT expression:rhs                                                  {: RESULT = new Expression.Comparison(sym.LT, lhs, rhs); :}
 								| expression:lhs LTE expression:rhs                                                 {: RESULT = new Expression.Comparison(sym.LTE, lhs, rhs); :}
 								| expression:lhs GT expression:rhs                                                  {: RESULT = new Expression.Comparison(sym.GT, lhs, rhs); :}
 								| expression:lhs GTE expression:rhs                                                 {: RESULT = new Expression.Comparison(sym.GTE, lhs, rhs); :}
 								| expression:lhs PLUS expression:rhs                                                {: RESULT = new Expression.Arithmetic(sym.PLUS, lhs, rhs); :}
 								| expression:lhs MINUS expression:rhs                                               {: RESULT = new Expression.Arithmetic(sym.MINUS, lhs, rhs); :}
-								| expression:lhs MULTI expression:rhs                                               {: RESULT = new Expression.Arithmetic(sym.MULTI, rhs); :}
+								| expression:lhs MULTI expression:rhs                                               {: RESULT = new Expression.Arithmetic(sym.MULTI, lhs, rhs); :}
 								| expression:arr LBRACK expression:idx RBRACK                                       {: RESULT = new Expression.ArrayAccess(arr, idx); :}
 								| IDENTIFIER:name LPAREN args:args RPAREN                                           {: RESULT = new Expression.Call(name, args); :}
 								| INTEGER_LITERAL:val                                                               {: RESULT = new Expression.IntLiteral(val); :}
@@ -162,24 +167,24 @@ expression_list				::= expression_list:exps COMMA expression:exp                
 								                                                                                        RESULT = list; :}
 								;
 
-type						::= stack_array:sarr                                                                    {: :}
-								| heap_array:harr
-								| primitive_type:prim
+type						::= stack_array:stack                                                                   {: RESULT = stack; :}
+								| heap_array:heap                                                                   {: RESULT = heap; :}
+								| primitive_type:prim                                                               {: RESULT = prim; :}
 								;
 
-signature_type				::= primitive_type:prim
-								| heap_array:harr
+signature_type				::= primitive_type:prim                                                                 {: RESULT = prim; :}
+								| heap_array:heap                                                                   {: RESULT = heap; :}
 								;
 								
-primitive_type				::= INT                                                                                 {: RESULT = new Type.NonArr(sym.INT); :}
-								| CHAR
-								| BOOL
+primitive_type				::= INT                                                                                 {: RESULT = new Type.Primitive(sym.INT); :}
+								| CHAR                                                                              {: RESULT = new Type.Primitive(sym.CHAR); :}
+								| BOOL                                                                              {: RESULT = new Type.Primitive(sym.BOOL); :}
 								;
 								
-stack_array					::= INT LBRACK INTEGER_LITERAL RBRACK                                                   {: RESULT = new Type.HeapArr(sym.INT); :}
-								| CHAR LBRACK INTEGER_LITERAL RBRACK
+stack_array					::= INT LBRACK INTEGER_LITERAL:size RBRACK                                              {: RESULT = new Type.StackArray(sym.INT, size); :}
+								| CHAR LBRACK INTEGER_LITERAL:size RBRACK                                           {: RESULT = new Type.StackArray(sym.CHAR, size); :}
 								;
 
-heap_array					::= INT LBRACK RBRACK
-								| CHAR LBRACK RBRACK
+heap_array					::= INT LBRACK RBRACK                                                                   {: RESULT = new Type.HeapArray(sym.INT); :}
+								| CHAR LBRACK RBRACK                                                                {: RESULT = new Type.HeapArray(sym.CHAR); :}
 								;

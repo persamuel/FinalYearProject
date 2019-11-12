@@ -1,10 +1,28 @@
+import Node.Program;
+import Parser.Parser;
+import java_cup.runtime.Scanner;
+import java_cup.runtime.Symbol;
 import org.junit.Test;
+
+import java.io.FileReader;
 
 import static org.junit.Assert.*;
 
 public class ParserTest {
 
     @Test
-    public void name() {
+    public void testAST() {
+        try {
+            Scanner s = new Lexer(new FileReader("res/example/program/strcpy.rop"));
+
+            Parser p = new Parser(s);
+            Program tmp = (Program) p.parse().value;
+
+            System.out.println("No errors.");
+        }
+        catch (Exception e) {
+            e.printStackTrace(System.out);
+            System.exit(1);
+        }
     }
 }
