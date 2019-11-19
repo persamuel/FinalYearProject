@@ -24,129 +24,11 @@
 
 \section{Introduction}
 	
-	\textbf{In brief:} The overall goal of this project is to create a toy compiler for a simple language. This will then be used to run a program to smash the stack, and begin an exploit known as return oriented programming (ROP). 
+	The base goal of this project is to create a toy compiler for a simple language. This will then be used to compile a program written in the language which smashes the stack. The program will be a jumping off point to begin an exploit known as return oriented programming (ROP).
 	
 	\newpage
 	
-	\subsection{Problem Area}
-	
-		\subsubsection{Buffer Overflow Attacks}
-	
-			This section covers buffer overflow exploits, which will be the primary vector for beginning a ROP exploit in this project. To first understand the topic, a recap on stack frames in memory is needed.
-			\\
-			\\
-			The figure below shows a simplified view of what a function with one local array variable would look like in memory \cite{AR-layout-x86-64}. One of the key concepts to grasp is that the data for the function that called the current one sits directly higher up in memory.
-		
-			\begin{figure}[h]
-				\centering
-				\begin{tabular}{r|c|l}
-					&& High Memory Address \\
-					\cline{2-2}
-					&& \\
-					&& \\
-					& Prev Function & \\
-					&& \\
-					&& \\
-					\cline{2-2}
-					&& \\
-					& Incoming Parameters & \\
-					&& \\
-					\cline{2-2}
-					& Return Address & \\
-					\cline{2-2}
-					& Base Pointer & \\
-					\cline{2-2}
-					&& \\
-					& Local Array & \\
-					Start of Array $\rightarrow$ && \\
-					\cline{2-2}
-					&& Low Memory Address \\
-				\end{tabular}
-				\label{AR-diagram}
-				\caption{General Stack Frame Layout}
-			\end{figure}
-			
-			The return address is crucial to this structure. Its job is to tell the program where to go back to in the previous function after it's done with the current one. Therefore if it is able to be altered, an attacker can essentially tell the program to start doing something else.
-			\\
-			\\
-			Fortunately the return address is accessible with the use of the local array. Since array accesses are encoded by adding to the start of the array, an array access outside the bounds goes higher up in memory than what is usually safe. Therefore by using calculated unsafe array accesses and assignments, the return address can be altered to whatever the attacker wants.
-		
-		\subsubsection{The NX/XD defense}
-		
-			Typically, due to the basic fact that instructions are data and vice-versa, the way that simple attacks would work is that before placing the return address, an attacker would write in the code  they want to run. Then they would target the return address back at the sequence that's just been written.
-			\\
-			\\
-			However, this attack type of attack was identified and defended against some time ago. The defense put in place, relies upon the idea that the stack in memory should only be used to store data, not code to be executed. Therefore by putting a flag which disallows execution on certain regions of memory, you can effectively shutdown the attacker being able to write what they want and then execute it. They can only write what they want, not execute it, hence the name No Execute (NX) or Execute Disable (XD) \cite{NX-XD-bit}.
-			
-\newpage
-
-		\subsubsection{ROP}
-	
-			ROP is among one of the methods of effectively sidestepping this defense. The core idea behind it and many other such attacks is to execute pre-existing sequences without this NX/XD flag, rather than find a way to turn it off.
-			\\
-			\\
-			However, one of the main challenges in this approach is to find such desirable sequences that an attacker would want to execute. In terms of ROP these sequences are called gadgets and use of them requires a little arranging beforehand. The structure of a gadget is simply a sequence of code that is guaranteed to execute its final instruction, that is the return (``ret'') instruction.
-			\\
-			\begin{figure}[h]
-				\centering
-				\begin{tabular}{r|c|l}
-					&& High Memory Address \\
-					&& \\
-					&& \\
-					& Earlier Functions & \\
-					&& \\
-					&& \\
-					\cline{2-2}
-					& nth Gadget Address & \\
-					\cline{2-2}
-					& ... & \\
-					\cline{2-2}
-					& 2nd Gadget Address & \\
-					\cline{2-2}
-					Previously RA $\rightarrow$ & 1st Gadget Address & \\
-					\cline{2-2}
-					Previously BP $\rightarrow$ && \\
-					& Overwritten & \\
-					& By Local Array & \\
-					&& \\
-					\cline{2-2}
-					&& Low Memory Address \\
-				\end{tabular}
-				\label{ROP-diagram}
-				\caption{Example Prepped ROP Stack}
-			\end{figure}
-			\\
-			The return instruction pulls an address off the stack and starts executing other instructions from there. Therefore, if several addresses are placed consecutively in memory as shown above, and since all the gadgets end in ``ret'', what will end up happening is the body of the gadgets will run one after the other with the ``ret'' chaining them together. Each ``ret'' at the end of the gadget will pull the next address of the stack, and start the whole process again from there. Because the gadget bodies are also executed, through careful arrangement this allows arbitrary code execution to be performed.
-	
-		\subsubsection{Components of a Toy Compiler}
-		
-			This section will be giving a short overview of the components necessary to implement the compiler for the language given in~\ref{sec:grammar}.
-			\\
-			\\
-			\textbf{The Lexer:}
-			\\
-			\\
-			The job of the lexer is simply to tokenise the input. The computer sees code as a long list of characters e.g. [ `i', `n', `t', ` `, `x', `=' ]. As one would imagine this is rather inconvenient to work with. So, to tokenise is to take this list of characters and produce a list of corresponding tokens a.k.a. words with the useless information removed i.e. whitespace and comments. The tokenised version of above is therefore [ INT, x, EQ ].
-			\\
-			\\
-			\textbf{The Parser:}
-			\\
-			\\
-			The job of the parser is to take the tokens given from the lexer, and produce an easy to work with structure that captures the essence of the program that was written. There are several parser tools available that take a grammar not too dissimilar from~\ref{sec:grammar} and automate this process. In this project the Java CUP parser (\url{http://www2.cs.tum.edu/projects/cup/}) is one such tool that will be used.			
-			\\
-			\\
-			\textbf{The Type Checker:}
-			\\
-			\\
-			Essentially the job of the type checker is to catch any semantic errors in the program structure that was given by the parser. For example the programmer might try to assign True to a variable that holds an integer. Obviously for safety reasons the code should not move past this phase. The way this will be accomplished is through the use of a common design pattern known as the Visitor pattern.  
-			\\
-			\\
-			\textbf{The Code Generator:}
-			\\
-			\\
-			Finally and perhaps the most self explanatory phase is code generation. The code generator can operate on the same structure after type checking is successful, and produces correct machine code that is able to be run directly on the computer. A point to note is that as this is a toy compiler no optimisations of such code will be attempted in this project.
-
-	\subsection{Aims}
+		\subsection{Aims}
 
 		One of the primary aims of this project will be to implement a compiler for the language given in section~\ref{sec:grammar}. This language is a modified subset of the C language that contains only the bare bones needed to perform the buffer overflow exploit that begins ROPing.
 		\\
@@ -179,6 +61,164 @@
 			\item Defeating the ASLR defense to get the exploit to run consistently without it disabled \cite{Random}.
 			\item Implementing a run-time monitor using Intel program statistics to detect when ROP attacks are occurring.
 		\end{enumerate}
+	
+\newpage
+
+	\section{Problem Area}
+	
+		\subsection{Buffer Overflow Attacks}
+	
+			This section covers buffer overflow exploits, which will be the primary vector for beginning a ROP exploit in this project. To first understand the topic, a recap on stack frames in memory is needed. Please note that this section is modeled with a standardized stack frame layout in mind, buffer overflows can vary depending on the layout a compiler chooses.
+			\\
+			\\
+			The figure below shows a simplified view of what a function with one local array variable would look like in memory \cite{AR-layout-x86-64}. One of the key concepts to grasp is that the data for the function that called the current one sits directly higher up in memory.
+		
+			\begin{figure}[h]
+				\centering
+				\begin{tabular}{r|c|l}
+					&& High Memory Address \\
+					\cline{2-2}
+					&& \\
+					& Previous & \\
+					& Function & \\
+					&& \\
+					\cline{2-2}
+					&& \\
+					& Incoming Parameters & \\
+					&& \\
+					\cline{2-2}
+					& Return Address & \\
+					\cline{2-2}
+					& Base Pointer & \\
+					\cline{2-2}
+					&& \\
+					& Local Array & \\
+					Start of Array $\rightarrow$ && \\
+					\cline{2-2}
+					&& Low Memory Address \\
+				\end{tabular}
+				\caption{General Stack Frame Layout}
+				 \label{fig:AR-diagram}
+			\end{figure}
+			
+			The return address is crucial to this structure. Its job is to tell the program where to go back to in the previous function after it's done with the current one. Therefore if it is able to be altered, an attacker can essentially tell the program to start doing something else.
+			\\
+			\\
+			Fortunately the return address is accessible with the use of the local array. Since array accesses are encoded by adding to the start of the array, an array access outside the bounds goes higher up in memory than what is usually safe. Therefore by using calculated unsafe array accesses and assignments, the return address can be altered to whatever the attacker wants.
+		
+		\subsection{The NX/XD defense}
+		
+			Typically, due to the basic fact that instructions are data and vice-versa, the way that simple attacks would work is that before placing the return address, an attacker would write in the code  they want to run. Then they would target the return address back at the sequence that's just been written.
+			\\
+			\\
+			However, this attack type of attack was identified and defended against some time ago. The defense put in place, relies upon the idea that the stack in memory should only be used to store data, not code to be executed. Therefore by putting a flag which disallows execution on certain regions of memory, you can effectively shutdown the attacker being able to write what they want and then execute it. They can only write what they want, not execute it, hence the name No Execute (NX) or Execute Disable (XD) \cite{NX-XD-bit}.
+			
+\newpage
+
+		\subsection{ROP}
+	
+			ROP is among one of the methods of effectively sidestepping this defense. The core idea behind it and many other such attacks is to execute pre-existing sequences without this NX/XD flag, rather than find a way to turn it off.
+			\\
+			\\
+			However, one of the main challenges in this approach is to find such desirable sequences that an attacker would want to execute. In terms of ROP these sequences are called gadgets and use of them requires a little arranging beforehand. The structure of a gadget is simply a sequence of code that is guaranteed to execute its final instruction, that is the return (``ret'') instruction.
+			\\
+			\begin{figure}[h]
+				\centering
+				\begin{tabular}{r|c|l}
+					&& High Memory Address \\
+					&& \\
+					&& \\
+					& Earlier Functions & \\
+					&& \\
+					&& \\
+					\cline{2-2}
+					& nth Gadget Address & \\
+					\cline{2-2}
+					& ... & \\
+					\cline{2-2}
+					& 2nd Gadget Address & \\
+					\cline{2-2}
+					Previously RA $\rightarrow$ & 1st Gadget Address & \\
+					\cline{2-2}
+					Previously BP $\rightarrow$ && \\
+					& Overwritten & \\
+					& By Local Array & \\
+					&& \\
+					\cline{2-2}
+					&& Low Memory Address \\
+				\end{tabular}
+				\caption{Example Prepped ROP Stack}
+				\label{fig:ROP-diagram}
+			\end{figure}
+			\\
+			The return instruction pulls an address off the stack and starts executing other instructions from there. Therefore, if several addresses are placed consecutively in memory as shown above, and since all the gadgets end in ``ret'', what will end up happening is the body of the gadgets will run one after the other with the ``ret'' chaining them together. Each ``ret'' at the end of the gadget will pull the next address of the stack, and start the whole process again from there. Because the gadget bodies are also executed, through careful arrangement this allows arbitrary code execution to be performed.
+			
+\newpage
+	
+		\subsection{Gadgets}
+		
+			To further understand how ROP works, it is worth talking about how the gadgets perform this arbitrary code execution. However, before this the stack pointer (SP) needs to be introduced into the picture. The stack pointer marks the boundary between what memory is in use i.e. the higher addresses and what is garbage i.e the lower addresses. In figures~\ref{fig:AR-diagram} and~\ref{fig:ROP-diagram} the stack pointer would be at the same position as the start of the local array.
+			\\
+			\\
+			In actuality what the return instruction is doing is taking the address at the SP and then moving it up by one. Just to note, the compiler will always ensure that the SP sits at the RA when the function ends, so it won't try and use the start of the array as an address.
+			
+			\begin{figure}[h]
+				\centering
+				\begin{tabular}{r|c|l}
+					&& High Memory Address \\
+					&& \\
+					\cline{2-2}
+					& Address of gadget n & \\
+					\cline{2-2}
+					& ... & \\
+					\cline{2-2}
+					& Address of gadget 2 & \\
+					\cline{2-2}
+					& Value wanted in \%eax & \\
+					\cline{2-2}
+					\%sp $\rightarrow$ & Address of gadget 1 & $\rightarrow$ pop \%eax; ret \\
+					\cline{2-2}
+					&& \\
+					&& Low Memory Address \\
+				\end{tabular}
+				\caption{Gadget to load constant into register}
+				\label{fig:Gadget-diagram}
+			\end{figure}
+			
+			A typical operation that code might want to perform is to load some constant into a register, this value could then be added to, subbed, etc. The example above from \cite{Geometry} will highlight how such an operation is done and give a flavor as to how gadgets have to make use of the SP. 
+			\\
+			\\
+			In this example the primary gadget consists of the sequence: ``\texttt{pop \%eax; ret}'', when this gadget starts executing the stack pointer will be pointing at the value above. The pop instruction does a similar job to return, however instead of jumping to the value, it stores it in a register. So with the execution of the pop instruction the original goal was accomplished, and as always the ending return starts the next gadget. To perform more complex operations more intricate designs are needed, and what can be done is limited by what gadgets are available to be addressed. For example, it is relatively easy to add to a register but to store that result in memory might be tricky, since fine grain control of where values are put might not be available. Although storage at an annoying offset from the SP might be.
+
+\newpage
+
+		\subsection{Components of a Toy Compiler}
+		
+			This section will be giving a short overview of the components necessary to implement the compiler for the language given in~\ref{sec:grammar}.
+			\\
+			\\
+			\textbf{The Lexer:}
+			\\
+			\\
+			The job of the lexer is simply to tokenise the input. The computer sees code as a long list of characters e.g. [ `i', `n', `t', ` `, `x', `=' ]. As one would imagine this is rather inconvenient to work with. So, to tokenise is to take this list of characters and produce a list of corresponding tokens a.k.a. words with the useless information removed i.e. whitespace and comments. The tokenised version of above is therefore [ INT, x, EQ ].
+			\\
+			\\
+			\textbf{The Parser:}
+			\\
+			\\
+			The job of the parser is to take the tokens given from the lexer, and produce an easy to work with structure that captures the essence of the program that was written. There are several parser tools available that take a grammar not too dissimilar from~\ref{sec:grammar} and automate this process. In this project the Java CUP parser (\url{http://www2.cs.tum.edu/projects/cup/}) is one such tool that will be used.			
+			\\
+			\\
+			\textbf{The Type Checker:}
+			\\
+			\\
+			Essentially the job of the type checker is to catch any semantic errors in the program structure that was given by the parser. For example the programmer might try to assign True to a variable that holds an integer. Obviously for safety reasons the code should not move past this phase. The way this will be accomplished is through the use of a common design pattern known as the Visitor pattern.  
+			\\
+			\\
+			\textbf{The Code Generator:}
+			\\
+			\\
+			Finally and perhaps the most self explanatory phase is code generation. The code generator can operate on the same structure after type checking is successful, and produces correct machine code that is able to be run directly on the computer. A point to note is that as this is a toy compiler no optimisations of such code will be attempted in this project.
 
 \newpage
 
@@ -191,7 +231,8 @@
 
 	\subsection{Project Relevance} 
 	
-		Essentially this project not only builds upon the Compilers course from last year, but also directly ties into the current Computer Security module. Both of these modules represent major sections of Computer Science and work within them is highly relevant to this course and my degree. Additionally, this project will also demonstrate my proficiency in areas such as compiler design and knowledge of exploits. Such areas are of direct interest to myself and are sought after in the areas in which I hope to work.
+		Essentially this project not only builds upon the Compilers course from last year, but also directly ties into the current Computer Security module. Both of these modules represent major sections of Computer Science and work within them is highly relevant to this course and my degree. Additionally, this project will also demonstrate my proficiency in areas such as compiler design and knowledge of exploits. Such areas are of direct interest to myself and are sought after in the areas in which I hope to work.	
+
 
 \newpage
 
@@ -405,7 +446,7 @@ The proposal was written up using Microsoft Word and has been appended to the en
 \bibliographystyle{plain}
 \bibliography{InterimReport}
 
-\textbf{Word Count: Approx. 2728}
+\textbf{Word Count: Approx. 3056}
 
 \includepdf[pages=-]{Proposal.pdf}
 

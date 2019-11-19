@@ -5,11 +5,11 @@ import Analysis.NodeVisitor;
 import java.util.List;
 
 public class FunctionSignature extends Node {
-    private Type type;
+    private TypeLabel type;
     private String name;
     private List<Parameter> args;
 
-    public FunctionSignature(Type type, String name, List<Parameter> args) {
+    public FunctionSignature(TypeLabel type, String name, List<Parameter> args) {
         this.type = type;
         this.name = name;
         this.args = args;

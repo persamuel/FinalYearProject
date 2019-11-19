@@ -546,7 +546,7 @@ class CUP$Parser$actions {
               FunctionSignature RESULT =null;
 		int typeleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-4)).left;
 		int typeright = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-4)).right;
-		Type type = (Type)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-4)).value;
+		TypeLabel type = (TypeLabel)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-4)).value;
 		int nameleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-3)).left;
 		int nameright = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-3)).right;
 		String name = (String)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-3)).value;
@@ -614,7 +614,7 @@ class CUP$Parser$actions {
               Parameter RESULT =null;
 		int typeleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)).left;
 		int typeright = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)).right;
-		Type type = (Type)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-1)).value;
+		TypeLabel type = (TypeLabel)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-1)).value;
 		int idleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).left;
 		int idright = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).right;
 		String id = (String)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
@@ -647,7 +647,7 @@ class CUP$Parser$actions {
               VariableDeclaration RESULT =null;
 		int typeleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-2)).left;
 		int typeright = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-2)).right;
-		Type type = (Type)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-2)).value;
+		TypeLabel type = (TypeLabel)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-2)).value;
 		int idleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)).left;
 		int idright = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)).right;
 		String id = (String)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-1)).value;
@@ -872,7 +872,7 @@ class CUP$Parser$actions {
 		int rhsleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).left;
 		int rhsright = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).right;
 		Expression rhs = (Expression)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
-		 RESULT = new Expression.Equality(sym.NOT, lhs, rhs); 
+		 RESULT = new Expression.Equality(sym.NOTEQ, lhs, rhs); 
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("expression",16, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-2)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
@@ -1176,10 +1176,10 @@ class CUP$Parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 56: // type ::= stack_array 
             {
-              Type RESULT =null;
+              TypeLabel RESULT =null;
 		int stackleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).left;
 		int stackright = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).right;
-		Type stack = (Type)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
+		TypeLabel stack = (TypeLabel)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
 		 RESULT = stack; 
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("type",19, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
@@ -1188,10 +1188,10 @@ class CUP$Parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 57: // type ::= heap_array 
             {
-              Type RESULT =null;
+              TypeLabel RESULT =null;
 		int heapleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).left;
 		int heapright = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).right;
-		Type heap = (Type)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
+		TypeLabel heap = (TypeLabel)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
 		 RESULT = heap; 
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("type",19, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
@@ -1200,10 +1200,10 @@ class CUP$Parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 58: // type ::= primitive_type 
             {
-              Type RESULT =null;
+              TypeLabel RESULT =null;
 		int primleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).left;
 		int primright = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).right;
-		Type prim = (Type)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
+		TypeLabel prim = (TypeLabel)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
 		 RESULT = prim; 
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("type",19, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
@@ -1212,10 +1212,10 @@ class CUP$Parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 59: // signature_type ::= primitive_type 
             {
-              Type RESULT =null;
+              TypeLabel RESULT =null;
 		int primleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).left;
 		int primright = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).right;
-		Type prim = (Type)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
+		TypeLabel prim = (TypeLabel)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
 		 RESULT = prim; 
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("signature_type",20, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
@@ -1224,10 +1224,10 @@ class CUP$Parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 60: // signature_type ::= heap_array 
             {
-              Type RESULT =null;
+              TypeLabel RESULT =null;
 		int heapleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).left;
 		int heapright = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).right;
-		Type heap = (Type)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
+		TypeLabel heap = (TypeLabel)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
 		 RESULT = heap; 
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("signature_type",20, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
@@ -1236,8 +1236,8 @@ class CUP$Parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 61: // primitive_type ::= INT 
             {
-              Type RESULT =null;
-		 RESULT = new Type.Primitive(sym.INT); 
+              TypeLabel RESULT =null;
+		 RESULT = new TypeLabel.Primitive(sym.INT); 
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("primitive_type",21, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
@@ -1245,8 +1245,8 @@ class CUP$Parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 62: // primitive_type ::= CHAR 
             {
-              Type RESULT =null;
-		 RESULT = new Type.Primitive(sym.CHAR); 
+              TypeLabel RESULT =null;
+		 RESULT = new TypeLabel.Primitive(sym.CHAR); 
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("primitive_type",21, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
@@ -1254,8 +1254,8 @@ class CUP$Parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 63: // primitive_type ::= BOOL 
             {
-              Type RESULT =null;
-		 RESULT = new Type.Primitive(sym.BOOL); 
+              TypeLabel RESULT =null;
+		 RESULT = new TypeLabel.Primitive(sym.BOOL); 
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("primitive_type",21, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
@@ -1263,11 +1263,11 @@ class CUP$Parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 64: // stack_array ::= INT LBRACK INTEGER_LITERAL RBRACK 
             {
-              Type RESULT =null;
+              TypeLabel RESULT =null;
 		int sizeleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)).left;
 		int sizeright = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)).right;
 		Integer size = (Integer)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-1)).value;
-		 RESULT = new Type.StackArray(sym.INT, size); 
+		 RESULT = new TypeLabel.StackArray(sym.INT, size); 
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("stack_array",22, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-3)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
@@ -1275,11 +1275,11 @@ class CUP$Parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 65: // stack_array ::= CHAR LBRACK INTEGER_LITERAL RBRACK 
             {
-              Type RESULT =null;
+              TypeLabel RESULT =null;
 		int sizeleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)).left;
 		int sizeright = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)).right;
 		Integer size = (Integer)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-1)).value;
-		 RESULT = new Type.StackArray(sym.CHAR, size); 
+		 RESULT = new TypeLabel.StackArray(sym.CHAR, size); 
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("stack_array",22, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-3)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
@@ -1287,8 +1287,8 @@ class CUP$Parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 66: // heap_array ::= INT LBRACK RBRACK 
             {
-              Type RESULT =null;
-		 RESULT = new Type.HeapArray(sym.INT); 
+              TypeLabel RESULT =null;
+		 RESULT = new TypeLabel.HeapArray(sym.INT); 
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("heap_array",23, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-2)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
@@ -1296,8 +1296,8 @@ class CUP$Parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 67: // heap_array ::= CHAR LBRACK RBRACK 
             {
-              Type RESULT =null;
-		 RESULT = new Type.HeapArray(sym.CHAR); 
+              TypeLabel RESULT =null;
+		 RESULT = new TypeLabel.HeapArray(sym.CHAR); 
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("heap_array",23, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-2)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;

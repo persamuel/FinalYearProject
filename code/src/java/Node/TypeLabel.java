@@ -2,10 +2,10 @@ package Node;
 
 import Analysis.NodeVisitor;
 
-public abstract class Type extends Node {
+public abstract class TypeLabel extends Node {
 
-    public static class Primitive extends Type {
-        private final int type;
+    public static class Primitive extends TypeLabel {
+        private int type;
 
         public Primitive(int type) {
             this.type = type;
@@ -19,11 +19,11 @@ public abstract class Type extends Node {
         }
     }
 
-    public static class StackArray extends Type {
+    public static class StackArray extends TypeLabel {
         private int type;
         private int size;
 
-        public StackArray(int type, Integer size) {
+        public StackArray(int type, int size) {
             this.type = type;
             this.size = size;
         }
@@ -36,7 +36,7 @@ public abstract class Type extends Node {
         }
     }
 
-    public static class HeapArray extends Type {
+    public static class HeapArray extends TypeLabel {
         private int type;
 
         public HeapArray(int type) {
@@ -50,5 +50,4 @@ public abstract class Type extends Node {
             }
         }
     }
-
 }

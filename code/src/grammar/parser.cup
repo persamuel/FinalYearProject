@@ -42,11 +42,11 @@ nonterminal	List<Statement>             statement_list;
 nonterminal	Expression		            expression;
 nonterminal	List<Expression>            args;
 nonterminal	List<Expression>            expression_list;
-nonterminal	Type		                type;
-nonterminal	Type			            signature_type;
-nonterminal	Type			            primitive_type;
-nonterminal	Type			            stack_array;
-nonterminal	Type			            heap_array;
+nonterminal	TypeLabel		            type;
+nonterminal	TypeLabel			        signature_type;
+nonterminal	TypeLabel			        primitive_type;
+nonterminal	TypeLabel			        stack_array;
+nonterminal	TypeLabel			        heap_array;
 
 /* Precedences */
 
@@ -136,7 +136,7 @@ statement_list				::= statement_list:stms statement:stm                         
 
 expression					::= expression:lhs AND expression:rhs                                                   {: RESULT = new Expression.Logical(sym.AND, lhs, rhs); :}
 								| expression:lhs OR expression:rhs                                                  {: RESULT = new Expression.Logical(sym.OR, lhs, rhs); :}
-								| expression:lhs NOTEQ expression:rhs                                               {: RESULT = new Expression.Equality(sym.NOT, lhs, rhs); :}
+								| expression:lhs NOTEQ expression:rhs                                               {: RESULT = new Expression.Equality(sym.NOTEQ, lhs, rhs); :}
 								| expression:lhs EQEQ expression:rhs                                                {: RESULT = new Expression.Equality(sym.EQEQ, lhs, rhs); :}
 								| expression:lhs LT expression:rhs                                                  {: RESULT = new Expression.Comparison(sym.LT, lhs, rhs); :}
 								| expression:lhs LTE expression:rhs                                                 {: RESULT = new Expression.Comparison(sym.LTE, lhs, rhs); :}
@@ -176,15 +176,15 @@ signature_type				::= primitive_type:prim                                       
 								| heap_array:heap                                                                   {: RESULT = heap; :}
 								;
 								
-primitive_type				::= INT                                                                                 {: RESULT = new Type.Primitive(sym.INT); :}
-								| CHAR                                                                              {: RESULT = new Type.Primitive(sym.CHAR); :}
-								| BOOL                                                                              {: RESULT = new Type.Primitive(sym.BOOL); :}
-								;
-								
-stack_array					::= INT LBRACK INTEGER_LITERAL:size RBRACK                                              {: RESULT = new Type.StackArray(sym.INT, size); :}
-								| CHAR LBRACK INTEGER_LITERAL:size RBRACK                                           {: RESULT = new Type.StackArray(sym.CHAR, size); :}
+primitive_type				::= INT                                                                                 {: RESULT = new TypeLabel.Primitive(sym.INT); :}
+								| CHAR                                                                              {: RESULT = new TypeLabel.Primitive(sym.CHAR); :}
+								| BOOL                                                                              {: RESULT = new TypeLabel.Primitive(sym.BOOL); :}
 								;
 
-heap_array					::= INT LBRACK RBRACK                                                                   {: RESULT = new Type.HeapArray(sym.INT); :}
-								| CHAR LBRACK RBRACK                                                                {: RESULT = new Type.HeapArray(sym.CHAR); :}
+stack_array					::= INT LBRACK INTEGER_LITERAL:size RBRACK                                              {: RESULT = new TypeLabel.StackArray(sym.INT, size); :}
+								| CHAR LBRACK INTEGER_LITERAL:size RBRACK                                           {: RESULT = new TypeLabel.StackArray(sym.CHAR, size); :}
+								;
+
+heap_array					::= INT LBRACK RBRACK                                                                   {: RESULT = new TypeLabel.HeapArray(sym.INT); :}
+								| CHAR LBRACK RBRACK                                                                {: RESULT = new TypeLabel.HeapArray(sym.CHAR); :}
 								;

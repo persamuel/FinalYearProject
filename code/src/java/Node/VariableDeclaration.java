@@ -3,10 +3,10 @@ package Node;
 import Analysis.NodeVisitor;
 
 public class VariableDeclaration extends Node {
-    private Type type;
+    private TypeLabel type;
     private String id;
 
-    public VariableDeclaration(Type type, String id) {
+    public VariableDeclaration(TypeLabel type, String id) {
         this.type = type;
         this.id = id;
     }

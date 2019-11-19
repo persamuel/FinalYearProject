@@ -3,10 +3,10 @@ package Node;
 import Analysis.NodeVisitor;
 
 public class Parameter extends Node {
-    private Type type;
+    private TypeLabel type;
     private String id;
 
-    public Parameter(Type type, String id) {
+    public Parameter(TypeLabel type, String id) {
         this.type = type;
         this.id = id;
     }

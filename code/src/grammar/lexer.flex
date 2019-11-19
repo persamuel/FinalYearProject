@@ -5,7 +5,7 @@ import Parser.sym;
 
 /* Options */
 
-%class Lexer
+%class Lexer.Lexer
 %unicode
 %cup
 %line

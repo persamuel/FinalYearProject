@@ -78,8 +78,14 @@ public abstract class NodeVisitor {
     public abstract boolean preVisit(Statement.Free node);
     public abstract void postVisit(Statement.Free node);
 
-    public abstract boolean preVisit(Type node);
-    public abstract void postVisit(Type node);
+    public abstract boolean preVisit(TypeLabel.Primitive node);
+    public abstract void postVisit(TypeLabel.Primitive node);
+
+    public abstract boolean preVisit(TypeLabel.StackArray node);
+    public abstract void postVisit(TypeLabel.StackArray node);
+
+    public abstract boolean preVisit(TypeLabel.HeapArray node);
+    public abstract void postVisit(TypeLabel.HeapArray node);
 
     public abstract boolean preVisit(VariableDeclaration node);
     public abstract void postVisit(VariableDeclaration node);
