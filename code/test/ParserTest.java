@@ -1,12 +1,11 @@
 import Node.Program;
+
 import Parser.Parser;
+import Lexer.Lexer;
 import java_cup.runtime.Scanner;
-import java_cup.runtime.Symbol;
 import org.junit.Test;
 
 import java.io.FileReader;
-
-import static org.junit.Assert.*;
 
 public class ParserTest {
 

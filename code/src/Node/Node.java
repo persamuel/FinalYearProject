@@ -1,19 +1,19 @@
 package Node;
 
 import Analysis.NodeVisitor;
-import Analysis.Type;
+import Analysis.Types;
 
 public abstract class Node {
     private boolean setOnce;
-    private Type attachedType;
+    private Types attachedType;
 
     public abstract void accept(NodeVisitor v);
 
-    public Type getAttachedType() {
+    public Types getAttachedType() {
         return attachedType;
     }
 
-    public void setAttachedType(Type type) {
+    public void setAttachedType(Types type) {
         if (!setOnce) {
             this.attachedType = attachedType;
             this.setOnce = true;

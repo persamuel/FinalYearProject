@@ -1,11 +1,13 @@
-import java_cup.runtime.*;
+package Lexer;
+
 import Parser.sym;
 
 %%
 
 /* Options */
 
-%class Lexer.Lexer
+%class Lexer
+%public
 %unicode
 %cup
 %line
