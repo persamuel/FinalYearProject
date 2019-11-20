@@ -5,3 +5,5 @@ code/project/
 code/build.sbt
 
 code/target/
+
+*.iml

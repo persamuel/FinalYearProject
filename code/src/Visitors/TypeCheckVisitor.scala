@@ -2,11 +2,28 @@ package Visitors
 
 import Analysis.NodeVisitor
 import Node._
+import Analysis.Types._
+
+import scala.collection.mutable.ArrayBuffer
 
 class TypeCheckVisitor extends NodeVisitor {
-  override def preVisit(node: Expression.Logical): Boolean = ???
+  val errors = new ArrayBuffer[String]()
 
-  override def postVisit(node: Expression.Logical): Unit = ???
+  override def preVisit(node: Expression.Logical): Boolean = {
+    true
+  }
+
+  override def postVisit(node: Expression.Logical): Unit = {
+    val leftType = node.getLhs.getAttachedType
+    val rightType = node.getRhs.getAttachedType
+
+    (leftType, rightType) match {
+      case (leftType:Bool_T, rightType:Bool_T) => node.setAttachedType(Bool_T)
+      case (leftType:Bool_T, rightType:_) => errors += "Error: Expecting RHS of logical expression to be of type boolean."
+      case (leftType:_, rightType:Bool_T) => errors += "Error: Expecting LHS of logical expression to be of type boolean."
+      case (leftType:_, rightType:_) => errors += "Error: Expecting both sides of logical expression to be of type boolean."
+    }
+  }
 
   override def preVisit(node: Expression.Equality): Boolean = ???
 
@@ -78,7 +95,9 @@ class TypeCheckVisitor extends NodeVisitor {
 
   override def preVisit(node: Program): Boolean = ???
 
-  override def postVisit(node: Program): Unit = ???
+  override def postVisit(node: Program): Unit = {
+    // print any errors
+  }
 
   override def preVisit(node: Statement.Compound): Boolean = ???
 

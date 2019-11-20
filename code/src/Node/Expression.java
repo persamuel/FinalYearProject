@@ -25,6 +25,18 @@ public abstract class Expression extends Node {
                 v.postVisit(this);
             }
         }
+
+        public int getOp() {
+            return op;
+        }
+
+        public Expression getLhs() {
+            return lhs;
+        }
+
+        public Expression getRhs() {
+            return rhs;
+        }
     }
 
     public static class Equality extends Expression {
