@@ -1,3 +1,5 @@
+package Parser;
+
 import Node.Program;
 
 import Parser.Parser;
@@ -16,6 +18,9 @@ public class ParserTest {
 
             Parser p = new Parser(s);
             Program tmp = (Program) p.parse().value;
+
+            int x[] = new int['b'];
+            int a = x['a'];
 
             System.out.println("No errors.");
         }

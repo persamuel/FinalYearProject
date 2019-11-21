@@ -13,6 +13,10 @@ public abstract class Statement extends Node {
             this.stms = stms;
         }
 
+        public List<Statement> getStms() {
+            return stms;
+        }
+
         @Override
         public void accept(NodeVisitor v) {
             if (v.preVisit(this)) {
@@ -36,6 +40,18 @@ public abstract class Statement extends Node {
             this.els = els;
         }
 
+        public Expression getCond() {
+            return cond;
+        }
+
+        public Statement getThen() {
+            return then;
+        }
+
+        public Statement getElse() {
+            return els;
+        }
+
         @Override
         public void accept(NodeVisitor v) {
             if (v.preVisit(this)) {
@@ -57,6 +73,14 @@ public abstract class Statement extends Node {
             this.body = body;
         }
 
+        public Expression getCond() {
+            return cond;
+        }
+
+        public Statement getBody() {
+            return body;
+        }
+
         @Override
         public void accept(NodeVisitor v) {
             if (v.preVisit(this)) {
@@ -69,12 +93,20 @@ public abstract class Statement extends Node {
     }
 
     public static class Assign extends Statement {
-        private String id;
+        private String name;
         private Expression val;
 
-        public Assign(String id, Expression val) {
-            this.id = id;
+        public Assign(String name, Expression val) {
+            this.name = name;
             this.val = val;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public Expression getVal() {
+            return val;
         }
 
         @Override
@@ -88,14 +120,48 @@ public abstract class Statement extends Node {
     }
 
     public static class ArrayAssign extends Statement {
-        private String id;
+        private String name;
         private Expression idx;
         private Expression val;
 
-        public ArrayAssign(String id, Expression idx, Expression val) {
-            this.id = id;
+        public ArrayAssign(String name, Expression idx, Expression val) {
+            this.name = name;
             this.idx = idx;
             this.val = val;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public Expression getIdx() {
+            return idx;
+        }
+
+        public Expression getVal() {
+            return val;
+        }
+
+        @Override
+        public void accept(NodeVisitor v) {
+            if (v.preVisit(this)) {
+                idx.accept(v);
+                val.accept(v);
+
+                v.postVisit(this);
+            }
+        }
+    }
+
+    public static class Free extends Statement {
+        private String name;
+
+        public Free(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
         }
 
         @Override
@@ -104,19 +170,6 @@ public abstract class Statement extends Node {
 
                 v.postVisit(this);
             }
-        }
-    }
-
-    public static class Free extends Statement {
-        private String id;
-
-        public Free(String id) {
-            this.id = id;
-        }
-
-        @Override
-        public void accept(NodeVisitor v) {
-
         }
     }
 
@@ -129,7 +182,10 @@ public abstract class Statement extends Node {
 
         @Override
         public void accept(NodeVisitor v) {
-
+            if (v.preVisit(this)) {
+                val.accept(v);
+                v.postVisit(this);
+            }
         }
     }
 }

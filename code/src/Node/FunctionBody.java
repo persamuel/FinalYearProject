@@ -15,6 +15,18 @@ public class FunctionBody extends Node {
         this.ret = ret;
     }
 
+    public List<VariableDeclaration> getVars() {
+        return vars;
+    }
+
+    public List<Statement> getStms() {
+        return stms;
+    }
+
+    public Expression getRet() {
+        return ret;
+    }
+
     @Override
     public void accept(NodeVisitor v) {
         if (v.preVisit(this)) {

@@ -49,6 +49,18 @@ public abstract class Expression extends Node {
             this.rhs = rhs;
         }
 
+        public int getOp() {
+            return op;
+        }
+
+        public Expression getLhs() {
+            return lhs;
+        }
+
+        public Expression getRhs() {
+            return rhs;
+        }
+
         @Override
         public void accept(NodeVisitor v) {
             if (v.preVisit(this)) {
@@ -68,6 +80,18 @@ public abstract class Expression extends Node {
             this.op = op;
             this.lhs = lhs;
             this.rhs = rhs;
+        }
+
+        public int getOp() {
+            return op;
+        }
+
+        public Expression getLhs() {
+            return lhs;
+        }
+
+        public Expression getRhs() {
+            return rhs;
         }
 
         @Override
@@ -91,6 +115,18 @@ public abstract class Expression extends Node {
             this.rhs = rhs;
         }
 
+        public int getOp() {
+            return op;
+        }
+
+        public Expression getLhs() {
+            return lhs;
+        }
+
+        public Expression getRhs() {
+            return rhs;
+        }
+
         @Override
         public void accept(NodeVisitor v) {
             if (v.preVisit(this)) {
@@ -103,18 +139,26 @@ public abstract class Expression extends Node {
     }
 
     public static class ArrayAccess extends Expression {
-        private Expression arr;
+        private Expression name;
         private Expression idx;
 
-        public ArrayAccess(Expression arr, Expression idx) {
-            this.arr = arr;
+        public ArrayAccess(Expression name, Expression idx) {
+            this.name = name;
             this.idx = idx;
+        }
+
+        public Expression getName() {
+            return name;
+        }
+
+        public Expression getIdx() {
+            return idx;
         }
 
         @Override
         public void accept(NodeVisitor v) {
             if (v.preVisit(this)) {
-                arr.accept(v);
+                name.accept(v);
                 idx.accept(v);
 
                 v.postVisit(this);
@@ -129,6 +173,14 @@ public abstract class Expression extends Node {
         public Call(String name, List<Expression> args) {
             this.name = name;
             this.args = args;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public List<Expression> getArgs() {
+            return args;
         }
 
         @Override
@@ -189,10 +241,14 @@ public abstract class Expression extends Node {
     }
 
     public static class Identifier extends Expression {
-        private String id;
+        private String name;
 
-        public Identifier(String id) {
-            this.id = id;
+        public Identifier(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
         }
 
         @Override
@@ -204,12 +260,20 @@ public abstract class Expression extends Node {
     }
 
     public static class NewArray extends Expression {
-        private int type;
+        private int typeConst;
         private Expression len;
 
-        public NewArray(int type, Expression len) {
-            this.type = type;
+        public NewArray(int typeConst, Expression len) {
+            this.typeConst = typeConst;
             this.len = len;
+        }
+
+        public int getTypeConst() {
+            return typeConst;
+        }
+
+        public Expression getLength() {
+            return len;
         }
 
         @Override
@@ -227,6 +291,10 @@ public abstract class Expression extends Node {
 
         public Negated(Expression exp) {
             this.exp = exp;
+        }
+
+        public Expression getExp() {
+            return exp;
         }
 
         @Override

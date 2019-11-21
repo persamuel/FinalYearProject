@@ -5,10 +5,14 @@ import Analysis.NodeVisitor;
 public abstract class TypeLabel extends Node {
 
     public static class Primitive extends TypeLabel {
-        private int type;
+        private int typeConst;
 
-        public Primitive(int type) {
-            this.type = type;
+        public Primitive(int typeConst) {
+            this.typeConst = typeConst;
+        }
+
+        public int getTypeConst() {
+            return typeConst;
         }
 
         @Override
@@ -20,12 +24,20 @@ public abstract class TypeLabel extends Node {
     }
 
     public static class StackArray extends TypeLabel {
-        private int type;
+        private int typeConst;
         private int size;
 
-        public StackArray(int type, int size) {
-            this.type = type;
+        public StackArray(int typeConst, int size) {
+            this.typeConst = typeConst;
             this.size = size;
+        }
+
+        public int getTypeConst() {
+            return typeConst;
+        }
+
+        public int getSize() {
+            return size;
         }
 
         @Override
@@ -37,10 +49,14 @@ public abstract class TypeLabel extends Node {
     }
 
     public static class HeapArray extends TypeLabel {
-        private int type;
+        private int typeConst;
 
-        public HeapArray(int type) {
-            this.type = type;
+        public HeapArray(int typeConst) {
+            this.typeConst = typeConst;
+        }
+
+        public int getTypeConst() {
+            return typeConst;
         }
 
         @Override

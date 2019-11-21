@@ -11,6 +11,14 @@ public class FunctionDefinition extends Node {
         this.body = body;
     }
 
+    public FunctionSignature getSignature() {
+        return sgnt;
+    }
+
+    public FunctionBody getBody() {
+        return body;
+    }
+
     @Override
     public void accept(NodeVisitor v) {
         if (v.preVisit(this)) {
