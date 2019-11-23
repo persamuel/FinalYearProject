@@ -27,6 +27,21 @@ public abstract class Statement extends Node {
                 v.postVisit(this);
             }
         }
+
+        @Override
+        public String toString() {
+            String str = "{ ";
+
+            for (int i = 0; i < stms.size() - 1; i++) {
+                str += stms.get(i);
+                str += "; ";
+            }
+
+            str += stms.get(stms.size() - 1);
+            str += " }";
+
+            return str;
+        }
     }
 
     public static class IfThenElse extends Statement {
@@ -62,6 +77,11 @@ public abstract class Statement extends Node {
                 v.postVisit(this);
             }
         }
+
+        @Override
+        public String toString() {
+            return "if (" + cond + ") " + "{ " + then + " }" + " else" + "{ " + els + " }";
+        }
     }
 
     public static class While extends Statement {
@@ -90,6 +110,11 @@ public abstract class Statement extends Node {
                 v.postVisit(this);
             }
         }
+
+        @Override
+        public String toString() {
+            return "while (" + cond + ") " + "{ " + body + " }";
+        }
     }
 
     public static class Assign extends Statement {
@@ -116,6 +141,11 @@ public abstract class Statement extends Node {
 
                 v.postVisit(this);
             }
+        }
+
+        @Override
+        public String toString() {
+            return name + " = " + val;
         }
     }
 
@@ -151,6 +181,11 @@ public abstract class Statement extends Node {
                 v.postVisit(this);
             }
         }
+
+        @Override
+        public String toString() {
+            return name + "[" + idx + "]" + " = " + val;
+        }
     }
 
     public static class Free extends Statement {
@@ -171,6 +206,11 @@ public abstract class Statement extends Node {
                 v.postVisit(this);
             }
         }
+
+        @Override
+        public String toString() {
+            return "free " + name;
+        }
     }
 
     public static class Print extends Statement {
@@ -186,6 +226,11 @@ public abstract class Statement extends Node {
                 val.accept(v);
                 v.postVisit(this);
             }
+        }
+
+        @Override
+        public String toString() {
+            return "print(" + val + ')';
         }
     }
 }

@@ -1,6 +1,7 @@
 package Node;
 
 import Analysis.NodeVisitor;
+import Parser.sym;
 
 public abstract class TypeLabel extends Node {
 
@@ -20,6 +21,11 @@ public abstract class TypeLabel extends Node {
             if (v.preVisit(this)) {
                 v.postVisit(this);
             }
+        }
+
+        @Override
+        public String toString() {
+            return sym.terminalNames[typeConst];
         }
     }
 
@@ -46,6 +52,11 @@ public abstract class TypeLabel extends Node {
                 v.postVisit(this);
             }
         }
+
+        @Override
+        public String toString() {
+            return sym.terminalNames[typeConst] + "[" + size + "]";
+        }
     }
 
     public static class HeapArray extends TypeLabel {
@@ -64,6 +75,11 @@ public abstract class TypeLabel extends Node {
             if (v.preVisit(this)) {
                 v.postVisit(this);
             }
+        }
+
+        @Override
+        public String toString() {
+            return sym.terminalNames[typeConst] + "[]";
         }
     }
 }

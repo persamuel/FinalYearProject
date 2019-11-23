@@ -20,6 +20,18 @@ public class Program extends Node {
         this.defs = defs;
     }
 
+    public List<FunctionDeclaration> getDeclarations() {
+        return decls;
+    }
+
+    public MainFunction getMainFunction() {
+        return main;
+    }
+
+    public List<FunctionDefinition> getDefinitions() {
+        return defs;
+    }
+
     @Override
     public void accept(NodeVisitor v) {
         if (v.preVisit(this)) {

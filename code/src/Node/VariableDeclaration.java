@@ -26,4 +26,6 @@ public class VariableDeclaration extends Node {
             v.postVisit(this);
         }
     }
+
+
 }

@@ -18,15 +18,15 @@ class SymbolTable(val parent: Option[SymbolTable]) {
       throw RedefinitionException("Error: Redefinition of name \"" + name + "\" which is already in scope")
     } else {
       category match {
-        case FUNCTION   => table.put(name, (mapping, Some(SymbolTable(Some(this))))); functions.add(name)
-        case PARAMETER  => table.put(name, (mapping, None)); parameters.add(name)
-        case LOCAL      => table.put(name, (mapping, None)); locals.add(name)
+        case FUNCTION   => functions.add(name); table.put(name, (mapping, Some(SymbolTable(Some(this)))))
+        case PARAMETER  => parameters.add(name); table.put(name, (mapping, None))
+        case LOCAL      => locals.add(name); table.put(name, (mapping, None))
       }
     }
   }
 
   def lookupMapping(name: String) = {
-    table(name)
+    table.get(name)
   }
 
   def lookupCategory(name: String) = {
@@ -55,9 +55,9 @@ class SymbolTable(val parent: Option[SymbolTable]) {
 
   def keys(category: SymbolCategory) = {
     category match {
-      case FUNCTION => functions.iterator
-      case PARAMETER => parameters.iterator
-      case LOCAL => locals.iterator
+      case FUNCTION => functions.toList
+      case PARAMETER => parameters.toList
+      case LOCAL => locals.toList
     }
   }
 

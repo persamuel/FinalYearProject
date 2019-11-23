@@ -4,35 +4,29 @@ import Analysis.{MyType, NodeVisitor}
 import Node._
 import Analysis.MyType._
 import Enviroment.SymbolCategory._
-import Enviroment.{RedefinitionException, SymbolTable, TypeCheckingException}
+import Enviroment.{SymbolTable, TypeCheckingException}
 import Parser.sym
 
+import scala.collection.mutable.LinkedHashSet
 import collection.JavaConverters._
 
 class TypeCheckVisitor extends NodeVisitor {
   private val rootTable: SymbolTable = SymbolTable(None)
 
+  private val decls = LinkedHashSet.empty[String]
   private var declFlag: Boolean = true
 
-  private var currentFunction: Option[MyType] = None
-  private var currentTable: SymbolTable = rootTable
-
-  override def preVisit(node: Expression.Logical): Boolean = {
-    true
-  }
+  private var currentFunctionType: Option[MyType] = None
+  private var currentFunctionEnv: SymbolTable = rootTable
 
   override def postVisit(node: Expression.Logical): Unit = {
-    val lhs = node.getLhs.getAttachedType
-    val rhs = node.getRhs.getAttachedType
+    val lhsType = node.getLhs.getAttachedType
+    val rhsType = node.getRhs.getAttachedType
 
-    (lhs, rhs) match {
+    (lhsType, rhsType) match {
       case (_:Bool_T, _:Bool_T) => node.setAttachedType(new Bool_T)
-      case _                    => throw TypeCheckingException("Error: Logical operator can't be applied to " + lhs + " and " + rhs + ".")
+      case _                    => throw TypeCheckingException(s"Error: Both sides in ${node.toString} must be of type Boolean.")
     }
-  }
-
-  override def preVisit(node: Expression.Equality): Boolean = {
-    true
   }
 
   override def postVisit(node: Expression.Equality): Unit = {
@@ -41,16 +35,13 @@ class TypeCheckVisitor extends NodeVisitor {
 
     if (lhs.getClass == rhs.getClass) {
       node.setAttachedType(new Bool_T())
-    } else {
+    }
+    else {
       (lhs, rhs) match {
         case (_:Int_T, _:Char_T) | (_:Char_T, _:Int_T) => node.setAttachedType(new Bool_T)
-        case _                                         => throw TypeCheckingException("Error: Equality operator can't be applied to " + lhs + " and " + rhs + ".")
+        case _                                         => throw TypeCheckingException(s"Error: Non comparable types in ${node.toString}.")
       }
     }
-  }
-
-  override def preVisit(node: Expression.Comparison): Boolean = {
-    true
   }
 
   override def postVisit(node: Expression.Comparison): Unit = {
@@ -60,12 +51,8 @@ class TypeCheckVisitor extends NodeVisitor {
     (lhs, rhs) match {
       case (_:Char_T, _:Char_T) | (_:Int_T, _:Int_T) => node.setAttachedType(new Bool_T)
       case (_:Int_T, _:Char_T) | (_:Char_T, _:Int_T) => node.setAttachedType(new Bool_T)
-      case _                                         => throw TypeCheckingException("Error: Comparison operator can't be applied to " + lhs + " and " + rhs + ".")
+      case _                                         => throw TypeCheckingException(s"Error: Non comparable types in ${node.toString}.")
     }
-  }
-
-  override def preVisit(node: Expression.Arithmetic): Boolean = {
-    true
   }
 
   override def postVisit(node: Expression.Arithmetic): Unit = {
@@ -75,234 +62,224 @@ class TypeCheckVisitor extends NodeVisitor {
     (lhs, rhs) match {
       case (_:Char_T, _:Char_T) | (_:Int_T, _:Int_T) => node.setAttachedType(new Int_T)
       case (_:Int_T, _:Char_T) | (_:Char_T, _:Int_T) => node.setAttachedType(new Int_T)
-      case _                                         => throw TypeCheckingException("Error: Arithmetic operator can't be applied to " + lhs + " and " + rhs + ".")
+      case _                                         => throw TypeCheckingException(s"Error: Both sides in ${node.toString} must be of either type Int or Char.")
     }
-  }
-
-  override def preVisit(node: Expression.ArrayAccess): Boolean = {
-    true
   }
 
   override def postVisit(node: Expression.ArrayAccess): Unit = {
     val index = node.getIdx.getAttachedType
 
     if (!index.isInstanceOf[Int_T] && !index.isInstanceOf[Char_T]) {
-      throw TypeCheckingException("Error: " + index + " can't be used to index into array.")
-    } else {
+      throw TypeCheckingException(s"Error: ${index.toString} can't be used to index in ${node.toString}.")
+    }
+    else {
       node.getName.getAttachedType match {
         case _: CharStackArray_T | _: CharHeapArray_T => node.setAttachedType(new Char_T)
         case _: IntStackArray_T | _: IntHeapArray_T   => node.setAttachedType(new Int_T)
         case _: StringArray_T                         => node.setAttachedType(new CharHeapArray_T)
-        case _                                        => throw TypeCheckingException("Error: ")
+        case _                                        => throw TypeCheckingException(s"Error: Identifier ${node.getName.toString} in ${node.toString} is not an array type.")
       }
     }
-  }
-
-  override def preVisit(node: Expression.Call): Boolean = {
-    true
   }
 
   override def postVisit(node: Expression.Call): Unit = {
-    // lookup the call in the parent table
-    val mapping = currentTable.lookupMappingInParent(node.getName)
+    val mapping = currentFunctionEnv.lookupMappingInParent(node.getName)
 
-    if (mapping._2.isDefined) {                                      // It is a function, as it has it's own environment
-      val expected = mapping._2.get.values(PARAMETER)
+    if (node.getName == "main") {
+      throw TypeCheckingException("Error: Can not call the main function directly in code.")
+    }
+
+    if (!mapping.isDefined) {
+      throw TypeCheckingException(s"Error: Undeclared identifier ${node.getName} in ${node.toString}.")
+    }
+    else if (mapping.get._2.isDefined) {
+      val expected = mapping.get._2.get.values(PARAMETER)
       val actual = node.getArgs.asScala.toList
 
-      if (expected.length != actual.length) {
-        throw TypeCheckingException("Error: Incorrect number of arguments provided.")
-      }
+      checkArgumentsMatch(expected, actual, node.toString);
 
-      var i = 0
-      while (expected.hasNext) {
-        val p1 = expected.next()._1
-        val p2 = actual(i).getAttachedType
-
-        if (p1.getClass != p2.getClass) {
-          throw TypeCheckingException("Error: Actual argument types don't match expected ones.")
-        }
-
-        i += 1
-      }
-
-      node.setAttachedType(mapping._1)
+      node.setAttachedType(mapping.get._1);
+    }
+    else {
+      throw TypeCheckingException(s"Error: Identifier ${node.getName} in ${node.toString} doesn't map to a function.")
     }
   }
 
-  override def preVisit(node: Expression.IntLiteral): Boolean = {
+  override def postVisit(node: Expression.IntLiteral): Unit = {
     node.setAttachedType(new Int_T)
-    false
   }
 
-  override def postVisit(node: Expression.IntLiteral): Unit = {}
-
-  override def preVisit(node: Expression.CharLiteral): Boolean = {
+  override def postVisit(node: Expression.CharLiteral): Unit = {
     node.setAttachedType(new Char_T)
-    false
   }
 
-  override def postVisit(node: Expression.CharLiteral): Unit = {}
-
-  override def preVisit(node: Expression.BoolLiteral): Boolean = {
+  override def postVisit(node: Expression.BoolLiteral): Unit = {
     node.setAttachedType(new Bool_T)
-    false
   }
 
-  override def postVisit(node: Expression.BoolLiteral): Unit = {}
+  override def postVisit(node: Expression.Identifier): Unit = {
+    val mapping = currentFunctionEnv.lookupMapping(node.getName)
 
-  override def preVisit(node: Expression.Identifier): Boolean = {
-    val mapping = currentTable.lookupMapping(node.getName)
-    node.setAttachedType(mapping._1)
-    false
-  }
+    if (!mapping.isDefined) {
+      throw TypeCheckingException(s"Error: Undeclared identifier ${node.getName}.")
+    }
 
-  override def postVisit(node: Expression.Identifier): Unit = {}
-
-  override def preVisit(node: Expression.NewArray): Boolean = {
-    true
+    node.setAttachedType(mapping.get._1)
   }
 
   override def postVisit(node: Expression.NewArray): Unit = {
     val len = node.getLength.getAttachedType
 
     if (!len.isInstanceOf[Char_T] || !len.isInstanceOf[Int_T]) {
-      throw TypeCheckingException("Error: " + len + " can't be used as size for an array array.")
-    } else {
-      node.getTypeConst match {
-        case sym.INT  => node.setAttachedType(new IntHeapArray_T)
-        case sym.CHAR => node.setAttachedType(new CharHeapArray_T)
-        case _        => throw TypeCheckingException("Error: Unexpected type constant.")
-      }
+      throw TypeCheckingException(s"Error: Unable to use ${node.getLength.toString} as array size in ${node.toString}.")
     }
-  }
 
-  override def preVisit(node: Expression.Negated): Boolean = {
-    true
+    node.getTypeConst match {
+      case sym.INT  => node.setAttachedType(new IntHeapArray_T)
+      case sym.CHAR => node.setAttachedType(new CharHeapArray_T)
+      case _        => throw TypeCheckingException("Error: Unexpected type constant.")
+    }
   }
 
   override def postVisit(node: Expression.Negated): Unit = {
     if (!node.getExp.isInstanceOf[Bool_T]) {
-      throw TypeCheckingException("Error: Can't negate " + node.getExp.getAttachedType + ".")
-    } else {
-      node.setAttachedType(new Bool_T)
+      throw TypeCheckingException(s"Error: Can't negate non-boolean expression ${node.toString}.")
     }
-  }
 
-  override def preVisit(node: FunctionBody): Boolean = {
-    true
+    node.setAttachedType(new Bool_T)
   }
 
   override def postVisit(node: FunctionBody): Unit = {
-    val mapping = currentFunction.get
+    val mapping = currentFunctionType.get
     val ret = node.getRet.getAttachedType
 
     if (mapping.getClass != ret.getClass) {
-      throw TypeCheckingException("Error: Return type " + ret + " doesn't match actual type " + mapping + ".")
+      throw TypeCheckingException(s"Error: Return expression ${node.getRet.toString} doesn't match the expected return type.")
     }
 
     for (stm <- node.getStms.asScala.toList) {
       if (!stm.getAttachedType.isInstanceOf[Unit_T]) {
-        throw TypeCheckingException("Error: Statement not of type " + new Unit_T + ".")
+        throw TypeCheckingException(s"Error: Statement ${stm.toString} is not of type Unit.")
       }
     }
 
     node.setAttachedType(new Unit_T)
-  }
-
-  override def preVisit(node: FunctionDeclaration): Boolean = {
-    true
   }
 
   override def postVisit(node: FunctionDeclaration): Unit = {
     if (!node.getSignature.getAttachedType.isInstanceOf[Unit_T]) {
-      throw TypeCheckingException("Error: Function signature not of type " + new Unit_T + ".")
+      throw TypeCheckingException(s"Error: Function body for ${node.getSignature.toString} is not of type Unit.")
     }
 
     node.setAttachedType(new Unit_T)
-  }
-
-  override def preVisit(node: FunctionDefinition): Boolean = {
-    true
   }
 
   override def postVisit(node: FunctionDefinition): Unit = {
     if (!node.getSignature.getAttachedType.isInstanceOf[Unit_T]) {
-      throw TypeCheckingException("Error: Function signature not of type " + new Unit_T + ".")
+      throw TypeCheckingException(s"Error: Function signature ${node.getSignature.toString} is not of type Unit.")
     }
 
     if (!node.getBody.getAttachedType.isInstanceOf[Unit_T]) {
-      throw TypeCheckingException("Error: Function body not of type " + new Unit_T + ".")
+      throw TypeCheckingException(s"Error: Function body for ${node.getSignature.toString} is not of type Unit.")
     }
 
-    currentFunction = None
-    currentTable = currentTable.parent.get
+    currentFunctionType = None
+    currentFunctionEnv = currentFunctionEnv.parent.get
     node.setAttachedType(new Unit_T)
-  }
-
-  override def preVisit(node: FunctionSignature): Boolean = {
-    true
   }
 
   override def postVisit(node: FunctionSignature): Unit = {
-    if (declFlag) { // You must be visiting a function declaration
-      currentTable.add(node.getName, node.getTypeLabel.getAttachedType, FUNCTION)
-      currentTable = currentTable.lookupMapping(node.getName)._2.get
-
-      for (arg <- node.getArgs.asScala.toList) {
-        currentTable.add(arg.getName, arg.getAttachedType, PARAMETER)
-      }
-
-      currentTable = currentTable.parent.get
-    } else {
-      val mapping = currentTable.lookupMapping(node.getName)
-      currentFunction = Some(mapping._1)
-      currentTable = mapping._2.get
+    if (declFlag) {
+      handleDeclarationSignature(node)
+    }
+    else {
+      handleDefintionSignature(node)
     }
 
     node.setAttachedType(new Unit_T)
+  }
+
+  def handleDeclarationSignature(node: FunctionSignature) = {
+    currentFunctionEnv.add(node.getName, node.getTypeLabel.getAttachedType, FUNCTION)
+    currentFunctionEnv = currentFunctionEnv.lookupMapping(node.getName).get._2.get
+
+    val args = node.getArgs.asScala.toList
+    for (arg <- args) {
+      currentFunctionEnv.add(arg.getName, arg.getAttachedType, PARAMETER)
+    }
+
+    currentFunctionEnv = currentFunctionEnv.parent.get
+    decls.add(node.getName)
+  }
+
+  def handleDefintionSignature(node: FunctionSignature) = {
+    val mapping = currentFunctionEnv.lookupMapping(node.getName)
+
+    if (mapping.isDefined) {
+      val expected = mapping.get._2.get.values(PARAMETER)
+      val actual = node.getArgs.asScala.toList
+
+      checkArgumentsMatch(expected, actual, node.toString)
+
+      currentFunctionType = Some(mapping.get._1)
+      currentFunctionEnv = mapping.get._2.get
+      decls.remove(node.getName)
+    }
+    else {
+      throw TypeCheckingException(s"Error: ${node.toString} doesn't have a corresponding function declaration.")
+    }
   }
 
   override def preVisit(node: MainFunction): Boolean = {
     declFlag = false
-    currentTable.add("main", new Int_T, FUNCTION)
-    currentTable = currentTable.lookupMapping("main")._2.get
-    currentFunction = Some(new Int_T)
 
-    currentTable.add(node.getArgc, new Int_T, PARAMETER)
-    currentTable.add(node.getArgv, new StringArray_T, PARAMETER)
+    currentFunctionEnv.add("main", new Int_T, FUNCTION)
+
+    currentFunctionEnv = currentFunctionEnv.lookupMapping("main").get._2.get
+    currentFunctionType = Some(new Int_T)
+
+    currentFunctionEnv.add(node.getArgc, new Int_T, PARAMETER)
+    currentFunctionEnv.add(node.getArgv, new StringArray_T, PARAMETER)
 
     true
   }
 
   override def postVisit(node: MainFunction): Unit = {
     if (!node.getBody.getAttachedType.isInstanceOf[Unit_T]) {
-      throw TypeCheckingException("Error: Function body not of type " + new Unit_T + ".")
+      throw TypeCheckingException(s"Error: Function body for ${node.toString} is not of type Unit.")
     }
 
-    currentFunction = None
-    currentTable = currentTable.parent.get
-    node.setAttachedType(new Unit_T)
-  }
+    currentFunctionType = None
+    currentFunctionEnv = currentFunctionEnv.parent.get
 
-  override def preVisit(node: Parameter): Boolean = {
-    true
+    node.setAttachedType(new Unit_T)
   }
 
   override def postVisit(node: Parameter): Unit = {
     node.setAttachedType(node.getTypeLabel.getAttachedType)
   }
 
-  override def preVisit(node: Program): Boolean = {
-    true
-  }
-
   override def postVisit(node: Program): Unit = {
-    // check that everything is of type unit.
-  }
+    if (!decls.isEmpty) {
+      throw TypeCheckingException(s"Error: No function definition provided for ${decls.iterator.next().toString}")
+    }
 
-  override def preVisit(node: Statement.Compound): Boolean = {
-    true
+    for (decl <- node.getDeclarations.asScala.toList) {
+      if (!decl.getAttachedType.isInstanceOf[Unit_T]) {
+        throw TypeCheckingException(s"Error: Declaration ${decl.toString} is not of type Unit.")
+      }
+    }
+
+    if (!node.getMainFunction.getAttachedType.isInstanceOf[Unit_T]) {
+      throw TypeCheckingException(s"Error: Main function is not of type Unit")
+    }
+
+    for (definition <- node.getDeclarations.asScala.toList) {
+      if (!definition.getAttachedType.isInstanceOf[Unit_T]) {
+        throw TypeCheckingException(s"Error: Definition for ${definition.getSignature.toString} is not of type Unit.")
+      }
+    }
+
   }
 
   override def postVisit(node: Statement.Compound): Unit = {
@@ -310,114 +287,109 @@ class TypeCheckVisitor extends NodeVisitor {
 
     for (stm <- stms) {
       if (!stm.getAttachedType.isInstanceOf[Unit_T]) {
-        throw TypeCheckingException("Error: Statement not of type " + new Unit_T + ".")
+        throw TypeCheckingException(s"Error: Statement ${stm.toString} is not of type Unit.")
       }
     }
 
     node.setAttachedType(new Unit_T)
   }
 
-  override def preVisit(node: Statement.IfThenElse): Boolean = {
-    true
-  }
-
   override def postVisit(node: Statement.IfThenElse): Unit = {
     if (!node.getCond.getAttachedType.isInstanceOf[Bool_T]) {
-      throw TypeCheckingException("Error: If condition must be of type + " + new Bool_T + ".")
-    } else if (!node.getThen.getAttachedType.isInstanceOf[Unit_T]) {
-      throw TypeCheckingException("Error: Then statement must be of type + " + new Unit_T + ".")
-    } else if (!node.getElse.getAttachedType.isInstanceOf[Unit_T]) {
-      throw TypeCheckingException("Error: Else statement must be of type + " + new Unit_T + ".")
+      throw TypeCheckingException(s"Error: If condition ${node.getCond.toString} is not of type Bool.")
+    }
+    else if (!node.getThen.getAttachedType.isInstanceOf[Unit_T]) {
+      throw TypeCheckingException(s"Error: Then statement ${node.getThen.toString} is not of type Unit.")
+    }
+    else if (!node.getElse.getAttachedType.isInstanceOf[Unit_T]) {
+      throw TypeCheckingException(s"Error: Else statement ${node.getElse.toString} is not of type Unit.")
     }
 
     node.setAttachedType(new Unit_T)
-  }
-
-  override def preVisit(node: Statement.While): Boolean = {
-    true
   }
 
   override def postVisit(node: Statement.While): Unit = {
     if (!node.getCond.getAttachedType.isInstanceOf[Bool_T]) {
-      throw TypeCheckingException("Error: While condition must be of type " + new Bool_T + ".")
-    } else if (!node.getBody.getAttachedType.isInstanceOf[Unit_T]) {
-      throw TypeCheckingException("Error: While body must be of type " + new Unit_T + ".")
+      throw TypeCheckingException(s"Error: While condition ${node.getCond.toString} is not of type Bool.")
+    }
+    else if (!node.getBody.getAttachedType.isInstanceOf[Unit_T]) {
+      throw TypeCheckingException(s"Error: While body ${node.getBody.toString} is not of type Unit.")
     }
 
     node.setAttachedType(new Unit_T)
   }
 
-  override def preVisit(node: Statement.Assign): Boolean = {
-    true
-  }
-
   override def postVisit(node: Statement.Assign): Unit = {
-    val mapping = currentTable.lookupMapping(node.getName)._1
+    val mapping = currentFunctionEnv.lookupMapping(node.getName)
+    val assignment = node.getVal.getAttachedType
 
-    if (mapping.getClass != node.getVal.getAttachedType.getClass) {
-      throw TypeCheckingException("Error: Types must match in assignment.")
-    } else {
-      node.setAttachedType(new Unit_T)
+    if (!mapping.isDefined) {
+      throw TypeCheckingException(s"Error: Undeclared identifier ${node.getName}.")
     }
-  }
 
-  override def preVisit(node: Statement.ArrayAssign): Boolean = {
-    true
+    if (mapping.get._1.isInstanceOf[CharStackArray_T] || mapping.get._1.isInstanceOf[IntStackArray_T]) {
+      throw TypeCheckingException(s"Error: Can't reassign stack array ${node.getName}.")
+    }
+
+    if (mapping.get._1.getClass != node.getVal.getAttachedType.getClass) {
+      (mapping.get._1, assignment) match {
+        case (_: Int_T, _: Char_T) | (_: Char_T, _: Int_T) => node.setAttachedType(new Unit_T)
+        case _                                             => throw TypeCheckingException(s"Error: Unable to assign ${node.getVal.toString} to ${node.getName} in ${node.toString}.")
+      }
+    }
+
+    node.setAttachedType(new Unit_T)
   }
 
   override def postVisit(node: Statement.ArrayAssign): Unit = {
     val index = node.getIdx.getAttachedType
 
     if (!index.isInstanceOf[Int_T] && !index.isInstanceOf[Char_T]) {
-      throw TypeCheckingException("Error: " + index + " can't be used to index into array.")
-    } else {
-      val mapping = currentTable.lookupMapping(node.getName)._1
-      val assignment = node.getVal.getAttachedType
+      throw TypeCheckingException(s"Error: ${index.toString} can't be used to index in ${node.toString}.")
+    }
 
-      (mapping, assignment) match {
-        case (_: CharStackArray_T, _: Char_T) | (_: CharHeapArray_T, _: Char_T) => node.setAttachedType(new Unit_T)
-        case (_: IntStackArray_T, _: Int_T) | (_: IntHeapArray_T, _: Int_T)     => node.setAttachedType(new Unit_T)
-        case (_: StringArray_T, _: CharHeapArray_T)                             => node.setAttachedType(new Unit_T)
-        case _                                                                  => throw TypeCheckingException("Error: Can't assign a " + assignment + " to array " + node.getName + ".")
-      }
+    val mapping = currentFunctionEnv.lookupMapping(node.getName)
+    val assignment = node.getVal.getAttachedType
+
+    if (!mapping.isDefined) {
+      throw TypeCheckingException(s"Error: Undeclared identifier ${node.getName}.")
+    }
+
+    (mapping.get._1, assignment) match {
+      case (_: CharStackArray_T, _: Char_T) | (_: CharHeapArray_T, _: Char_T) => node.setAttachedType(new Unit_T)
+      case (_: IntStackArray_T, _: Int_T) | (_: IntHeapArray_T, _: Int_T)     => node.setAttachedType(new Unit_T)
+      case (_: StringArray_T, _: CharHeapArray_T)                             => node.setAttachedType(new Unit_T)
+      case _                                                                  => throw TypeCheckingException(s"Error: Types do not match in assignment ${node.toString}.")
     }
   }
 
-  override def preVisit(node: Statement.Free): Boolean = {
-    val mapping = currentTable.lookupMapping(node.getName)
+  override def postVisit(node: Statement.Free): Unit = {
+    val mapping = currentFunctionEnv.lookupMapping(node.getName)
 
-    mapping._1 match {
+    if (!mapping.isDefined) {
+      throw TypeCheckingException(s"Error: Undeclared identifier ${node.getName}.")
+    }
+
+    mapping.get._1 match {
       case _: IntHeapArray_T | _: CharHeapArray_T => node.setAttachedType(new Unit_T)
-      case _                                      => throw TypeCheckingException("Error: Can only free heap arrays.")
+      case _                                      => throw TypeCheckingException(s"Error: Can't free non-heap array variable ${node.getName}.")
     }
-
-    false
-  }
-
-  override def postVisit(node: Statement.Free): Unit = {}
-
-  override def preVisit(node: Statement.Print): Boolean = {
-    true
   }
 
   override def postVisit(node: Statement.Print): Unit = {
     node.setAttachedType(new Unit_T)
   }
 
-  override def preVisit(node: TypeLabel.Primitive): Boolean = {
+  override def postVisit(node: TypeLabel.Primitive): Unit = {
     node.getTypeConst match {
       case sym.INT  => node.setAttachedType(new Int_T)
       case sym.CHAR => node.setAttachedType(new Char_T)
       case sym.BOOL => node.setAttachedType(new Bool_T)
       case _        => throw TypeCheckingException("Error: Unexpected type constant.")
     }
-
-    false
   }
 
-  override def postVisit(node: TypeLabel.Primitive): Unit = {}
-
-  override def preVisit(node: TypeLabel.StackArray): Boolean = {
+  override def postVisit(node: TypeLabel.StackArray): Unit = {
     val size = node.getSize
 
     node.getTypeConst match {
@@ -425,29 +397,32 @@ class TypeCheckVisitor extends NodeVisitor {
       case sym.CHAR => node.setAttachedType(new CharStackArray_T(size))
       case _        => throw TypeCheckingException("Error: Unexpected type constant.")
     }
-
-    false
   }
 
-  override def postVisit(node: TypeLabel.StackArray): Unit = {}
-
-  override def preVisit(node: TypeLabel.HeapArray): Boolean = {
+  override def postVisit(node: TypeLabel.HeapArray): Unit = {
     node.getTypeConst match {
       case sym.INT  => node.setAttachedType(new IntHeapArray_T)
       case sym.CHAR => node.setAttachedType(new CharHeapArray_T)
       case _        => throw TypeCheckingException("Error: Unexpected type constant.")
     }
-
-    false
-  }
-
-  override def postVisit(node: TypeLabel.HeapArray): Unit = {}
-
-  override def preVisit(node: VariableDeclaration): Boolean = {
-    true
   }
 
   override def postVisit(node: VariableDeclaration): Unit = {
-    currentTable.add(node.getName, node.getTypeLabel.getAttachedType, LOCAL)
+    currentFunctionEnv.add(node.getName, node.getTypeLabel.getAttachedType, LOCAL)
+  }
+
+  private def checkArgumentsMatch(expected: List[(MyType, Option[SymbolTable])], actual: List[Node], errorLine: String): Unit = {
+    if (actual.length != expected.length) {
+      throw TypeCheckingException(s"Error: Incorrect number of arguments provided in call $errorLine.")
+    }
+
+    // Stack arrays can be passed to other functions as the pointer will just be copied, will lose size info though
+    for (p1 <- expected; p2 <- actual) {
+      if ((p1._1.getClass != p2.getAttachedType.getClass) &&
+          !(p1._1.isInstanceOf[IntHeapArray_T] && p2.getAttachedType.isInstanceOf[IntStackArray_T]) &&
+          !(p1._1.isInstanceOf[CharHeapArray_T] && p2.getAttachedType.isInstanceOf[CharStackArray_T])) {
+         throw TypeCheckingException(s"Error: Actual argument types don't match expected ones in $errorLine.")
+      }
+    }
   }
 }

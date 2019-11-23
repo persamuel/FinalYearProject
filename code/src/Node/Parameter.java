@@ -27,4 +27,9 @@ public class Parameter extends Node {
             v.postVisit(this);
         }
     }
+
+    @Override
+    public String toString() {
+        return typeLabel + " " + name;
+    }
 }

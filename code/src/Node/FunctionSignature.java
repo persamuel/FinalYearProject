@@ -39,4 +39,19 @@ public class FunctionSignature extends Node {
             v.postVisit(this);
         }
     }
+
+    @Override
+    public String toString() {
+        String str = typeLabel + " " + name + '(';
+
+        for (int i = 0; i < args.size() - 1; i++) {
+            str += args.get(i).toString();
+            str += ", ";
+        }
+
+        str += args.get(args.size() - 1);
+        str += ')';
+
+        return str;
+    }
 }

@@ -1,6 +1,7 @@
 package Node;
 
 import Analysis.NodeVisitor;
+import Parser.sym;
 
 import java.util.List;
 
@@ -37,6 +38,11 @@ public abstract class Expression extends Node {
         public Expression getRhs() {
             return rhs;
         }
+
+        @Override
+        public String toString() {
+            return lhs + " " + sym.terminalNames[op] + " " + rhs;
+        }
     }
 
     public static class Equality extends Expression {
@@ -69,6 +75,11 @@ public abstract class Expression extends Node {
 
                 v.postVisit(this);
             }
+        }
+
+        @Override
+        public String toString() {
+            return lhs + " " + sym.terminalNames[op] + " " + rhs;
         }
     }
 
@@ -103,6 +114,11 @@ public abstract class Expression extends Node {
                 v.postVisit(this);
             }
         }
+
+        @Override
+        public String toString() {
+            return lhs + " " + sym.terminalNames[op] + " " + rhs;
+        }
     }
 
     public static class Arithmetic extends Expression {
@@ -136,6 +152,11 @@ public abstract class Expression extends Node {
                 v.postVisit(this);
             }
         }
+
+        @Override
+        public String toString() {
+            return lhs + " " + sym.terminalNames[op] + " " + rhs;
+        }
     }
 
     public static class ArrayAccess extends Expression {
@@ -164,6 +185,11 @@ public abstract class Expression extends Node {
                 v.postVisit(this);
             }
         }
+
+        @Override
+        public String toString() {
+            return name + "[" + idx + "]";
+        }
     }
 
     public static class Call extends Expression {
@@ -186,12 +212,27 @@ public abstract class Expression extends Node {
         @Override
         public void accept(NodeVisitor v) {
             if (v.preVisit(this)) {
-                for (Expression arg : args) { // todo: Checkout possible weird evaluation of list
+                for (Expression arg : args) {
                     arg.accept(v);
                 }
 
                 v.postVisit(this);
             }
+        }
+
+        @Override
+        public String toString() {
+            String str = name + '(';
+
+            for (int i = 0; i < args.size() - 1; i++) {
+                str += args.get(i).toString();
+                str += ", ";
+            }
+
+            str += args.get(args.size() - 1);
+            str += ')';
+
+            return str;
         }
     }
 
@@ -208,6 +249,11 @@ public abstract class Expression extends Node {
                 v.postVisit(this);
             }
         }
+
+        @Override
+        public String toString() {
+            return val.toString();
+        }
     }
 
     public static class CharLiteral extends Expression {
@@ -223,6 +269,11 @@ public abstract class Expression extends Node {
                 v.postVisit(this);
             }
         }
+
+        @Override
+        public String toString() {
+            return "'" + val + "'";
+        }
     }
 
     public static class BoolLiteral extends Expression {
@@ -237,6 +288,11 @@ public abstract class Expression extends Node {
             if (v.preVisit(this)) {
                 v.postVisit(this);
             }
+        }
+
+        @Override
+        public String toString() {
+            return val.toString();
         }
     }
 
@@ -256,6 +312,11 @@ public abstract class Expression extends Node {
             if (v.preVisit(this)) {
                 v.postVisit(this);
             }
+        }
+
+        @Override
+        public String toString() {
+            return name;
         }
     }
 
@@ -284,6 +345,11 @@ public abstract class Expression extends Node {
                 v.postVisit(this);
             }
         }
+
+        @Override
+        public String toString() {
+            return "new " + sym.terminalNames[typeConst] + "[" + len.toString() + "]";
+        }
     }
 
     public static class Negated extends Expression {
@@ -304,6 +370,11 @@ public abstract class Expression extends Node {
 
                 v.postVisit(this);
             }
+        }
+
+        @Override
+        public String toString() {
+            return exp.toString();
         }
     }
 
