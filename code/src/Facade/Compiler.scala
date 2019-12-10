@@ -9,7 +9,7 @@ import Visitors.TypeCheckVisitor
 import java_cup.runtime.Scanner
 
 object Compiler extends App {
-  val scanner = new Lexer(new FileReader("res/example/program/strcpy.rop"))
+  val scanner = new Lexer(new FileReader("res/example/program/factorial.rop"))
 
   val parser = new Parser(scanner)
 

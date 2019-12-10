@@ -413,7 +413,7 @@ class TypeCheckVisitor extends NodeVisitor {
 
   private def checkArgumentsMatch(expected: List[(MyType, Option[SymbolTable])], actual: List[Node], errorLine: String): Unit = {
     if (actual.length != expected.length) {
-      throw TypeCheckingException(s"Error: Incorrect number of arguments provided in call $errorLine.")
+      throw TypeCheckingException(s"Error: Incorrect number of arguments provided in $errorLine.")
     }
 
     // Stack arrays can be passed to other functions as the pointer will just be copied, will lose size info though
