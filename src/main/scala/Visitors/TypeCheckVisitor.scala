@@ -142,7 +142,7 @@ class TypeCheckVisitor extends NodeVisitor {
   }
 
   override def postVisit(node: Expression.Negated): Unit = {
-    if (!node.getExp.isInstanceOf[Bool_T]) {
+    if (!node.getExp.getAttachedType.isInstanceOf[Bool_T]) {
       throw TypeCheckingException(s"Error: Can't negate non-boolean expression ${node.toString}.")
     }
 

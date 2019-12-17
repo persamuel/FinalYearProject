@@ -7,3 +7,11 @@ code/build.sbt
 code/target/
 
 *.iml
+
+target/
+
+build.sbt
+
+.idea/
+
+project/
