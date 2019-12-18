@@ -4,7 +4,7 @@ import Analysis.{MyType, NodeVisitor}
 import Node._
 import Analysis.MyType._
 import Enviroment.SymbolCategory._
-import Enviroment.{SymbolTable, TypeCheckingException}
+import Enviroment.{Mapping, SymbolTable, TypeCheckingException}
 import Parser.sym
 
 import scala.collection.mutable.LinkedHashSet
@@ -92,13 +92,13 @@ class TypeCheckVisitor extends NodeVisitor {
     if (!mapping.isDefined) {
       throw TypeCheckingException(s"Error: Undeclared identifier ${node.getName} in ${node.toString}.")
     }
-    else if (mapping.get._2.isDefined) {
-      val expected = mapping.get._2.get.values(PARAMETER)
+    else if (currentFunctionEnv.lookupCategoryInParent(node.getName) == FUNCTION) {
+      val expected = mapping.get.enviroment.get.values(PARAMETER)
       val actual = node.getArgs.asScala.toList
 
       checkArgumentsMatch(expected, actual, node.toString);
 
-      node.setAttachedType(mapping.get._1);
+      node.setAttachedType(mapping.get.typeof);
     }
     else {
       throw TypeCheckingException(s"Error: Identifier ${node.getName} in ${node.toString} doesn't map to a function.")
@@ -124,7 +124,7 @@ class TypeCheckVisitor extends NodeVisitor {
       throw TypeCheckingException(s"Error: Undeclared identifier ${node.getName}.")
     }
 
-    node.setAttachedType(mapping.get._1)
+    node.setAttachedType(mapping.get.typeof)
   }
 
   override def postVisit(node: Expression.NewArray): Unit = {
@@ -201,7 +201,7 @@ class TypeCheckVisitor extends NodeVisitor {
 
   def handleDeclarationSignature(node: FunctionSignature) = {
     currentFunctionEnv.add(node.getName, node.getTypeLabel.getAttachedType, FUNCTION)
-    currentFunctionEnv = currentFunctionEnv.lookupMapping(node.getName).get._2.get
+    currentFunctionEnv = rootTable.lookupMapping(node.getName).get.enviroment.get
 
     val args = node.getArgs.asScala.toList
     for (arg <- args) {
@@ -216,13 +216,13 @@ class TypeCheckVisitor extends NodeVisitor {
     val mapping = currentFunctionEnv.lookupMapping(node.getName)
 
     if (mapping.isDefined) {
-      val expected = mapping.get._2.get.values(PARAMETER)
+      val expected = mapping.get.enviroment.get.values(PARAMETER)
       val actual = node.getArgs.asScala.toList
 
       checkArgumentsMatch(expected, actual, node.toString)
 
-      currentFunctionType = Some(mapping.get._1)
-      currentFunctionEnv = mapping.get._2.get
+      currentFunctionType = Some(mapping.get.typeof)
+      currentFunctionEnv = mapping.get.enviroment.get
       decls.remove(node.getName)
     }
     else {
@@ -235,7 +235,7 @@ class TypeCheckVisitor extends NodeVisitor {
 
     currentFunctionEnv.add("main", new Int_T, FUNCTION)
 
-    currentFunctionEnv = currentFunctionEnv.lookupMapping("main").get._2.get
+    currentFunctionEnv = rootTable.lookupMapping("main").get.enviroment.get
     currentFunctionType = Some(new Int_T)
 
     currentFunctionEnv.add(node.getArgc, new Int_T, PARAMETER)
@@ -327,12 +327,12 @@ class TypeCheckVisitor extends NodeVisitor {
       throw TypeCheckingException(s"Error: Undeclared identifier ${node.getName}.")
     }
 
-    if (mapping.get._1.isInstanceOf[CharStackArray_T] || mapping.get._1.isInstanceOf[IntStackArray_T]) {
+    if (mapping.get.typeof.isInstanceOf[CharStackArray_T] || mapping.get.typeof.isInstanceOf[IntStackArray_T]) {
       throw TypeCheckingException(s"Error: Can't reassign stack array ${node.getName}.")
     }
 
-    if (mapping.get._1.getClass != node.getVal.getAttachedType.getClass) {
-      (mapping.get._1, assignment) match {
+    if (mapping.get.typeof.getClass != node.getVal.getAttachedType.getClass) {
+      (mapping.get.typeof, assignment) match {
         case (_: Int_T, _: Char_T) | (_: Char_T, _: Int_T) => node.setAttachedType(new Unit_T)
         case _                                             => throw TypeCheckingException(s"Error: Unable to assign ${node.getVal.toString} to ${node.getName} in ${node.toString}.")
       }
@@ -355,7 +355,7 @@ class TypeCheckVisitor extends NodeVisitor {
       throw TypeCheckingException(s"Error: Undeclared identifier ${node.getName}.")
     }
 
-    (mapping.get._1, assignment) match {
+    (mapping.get.typeof, assignment) match {
       case (_: CharStackArray_T, _: Char_T) | (_: CharHeapArray_T, _: Char_T) => node.setAttachedType(new Unit_T)
       case (_: IntStackArray_T, _: Int_T) | (_: IntHeapArray_T, _: Int_T)     => node.setAttachedType(new Unit_T)
       case (_: StringArray_T, _: CharHeapArray_T)                             => node.setAttachedType(new Unit_T)
@@ -370,7 +370,7 @@ class TypeCheckVisitor extends NodeVisitor {
       throw TypeCheckingException(s"Error: Undeclared identifier ${node.getName}.")
     }
 
-    mapping.get._1 match {
+    mapping.get.typeof match {
       case _: IntHeapArray_T | _: CharHeapArray_T => node.setAttachedType(new Unit_T)
       case _                                      => throw TypeCheckingException(s"Error: Can't free non-heap array variable ${node.getName}.")
     }
@@ -411,16 +411,16 @@ class TypeCheckVisitor extends NodeVisitor {
     currentFunctionEnv.add(node.getName, node.getTypeLabel.getAttachedType, LOCAL)
   }
 
-  private def checkArgumentsMatch(expected: List[(MyType, Option[SymbolTable])], actual: List[Node], errorLine: String): Unit = {
+  private def checkArgumentsMatch(expected: List[Mapping], actual: List[Node], errorLine: String): Unit = {
     if (actual.length != expected.length) {
       throw TypeCheckingException(s"Error: Incorrect number of arguments provided in $errorLine.")
     }
 
     // Stack arrays can be passed to other functions as the pointer will just be copied, will lose size info though
     for (p1 <- expected; p2 <- actual) {
-      if ((p1._1.getClass != p2.getAttachedType.getClass) &&
-          !(p1._1.isInstanceOf[IntHeapArray_T] && p2.getAttachedType.isInstanceOf[IntStackArray_T]) &&
-          !(p1._1.isInstanceOf[CharHeapArray_T] && p2.getAttachedType.isInstanceOf[CharStackArray_T])) {
+      if ((p1.typeof.getClass != p2.getAttachedType.getClass) &&
+          !(p1.typeof.isInstanceOf[IntHeapArray_T] && p2.getAttachedType.isInstanceOf[IntStackArray_T]) &&
+          !(p1.typeof.isInstanceOf[CharHeapArray_T] && p2.getAttachedType.isInstanceOf[CharStackArray_T])) {
          throw TypeCheckingException(s"Error: Actual argument types don't match expected ones in $errorLine.")
       }
     }

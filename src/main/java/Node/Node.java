@@ -4,8 +4,8 @@ import Analysis.NodeVisitor;
 import Analysis.MyType;
 
 public abstract class Node {
-    private boolean setOnce;
     private MyType attachedType;
+    private String attachedAssembly;
 
     public abstract void accept(NodeVisitor v);
 
@@ -14,9 +14,14 @@ public abstract class Node {
     }
 
     public void setAttachedType(MyType type) {
-        if (!setOnce) {
-            this.attachedType = type;
-            this.setOnce = true;
-        }
+        this.attachedType = type;
+    }
+
+    public String getAttachedAssembly() {
+        return attachedAssembly;
+    }
+
+    public void setAttachedAssembly(String attachedAssembly) {
+        this.attachedAssembly = attachedAssembly;
     }
 }

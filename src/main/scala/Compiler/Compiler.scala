@@ -8,7 +8,7 @@ import Visitors.TypeCheckVisitor
 import java_cup.runtime.Scanner
 
 object Compiler extends App {
-  val scanner = new Lexer(new FileReader("/home/peter/IdeaProjects/FinalYearProject/src/main/resources/Example/Programs/factorial.rop"))
+  val scanner = new Lexer(new FileReader("/home/peter/IdeaProjects/FinalYearProject/src/main/resources/Example/Programs/strcpy.rop"))
 
   val parser = new Parser(scanner)
 
@@ -16,5 +16,7 @@ object Compiler extends App {
 
   val visitor = new TypeCheckVisitor()
 
-  ast.accept(visitor);
+  ast.accept(visitor)
+
+  println("Hello")
 }

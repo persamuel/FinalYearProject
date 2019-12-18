@@ -1,5 +1,3 @@
-package Parser;
-
 import Node.Program;
 
 import Parser.Parser;
@@ -23,8 +21,7 @@ public class ParserTest {
             int a = x['a'];
 
             System.out.println("No errors.");
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace(System.out);
             System.exit(1);
         }

@@ -4,7 +4,7 @@ int main(int argc, char[][] argv) {
     int tmp;
     char[500] buf;
 
-    tmp = strcpy(argv[1], buf);
+    tmp = strcpy(argv[0], buf);
     print(buf);
 
     return 0;

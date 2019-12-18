@@ -7,20 +7,39 @@ import scala.collection.mutable.LinkedHashSet
 import scala.collection.mutable.Map
 
 class SymbolTable(val parent: Option[SymbolTable]) {
-  private val table = Map.empty[String, (MyType, Option[SymbolTable])]
+  private val table = Map.empty[String, Mapping]
 
   private val functions = LinkedHashSet.empty[String]
+  private var paramOffset = 4
   private val parameters = LinkedHashSet.empty[String]
+  private var localOffset = 0
   private val locals = LinkedHashSet.empty[String]
 
-  def add(name: String, mapping: MyType, category: SymbolCategory) = {
+  def add(name: String, typeof: MyType, category: SymbolCategory) = {
     if (table.contains(name)) {
       throw RedefinitionException("Error: Redefinition of name \"" + name + "\" which is already in scope")
     } else {
       category match {
-        case FUNCTION   => functions.add(name); table.put(name, (mapping, Some(SymbolTable(Some(this)))))
-        case PARAMETER  => parameters.add(name); table.put(name, (mapping, None))
-        case LOCAL      => locals.add(name); table.put(name, (mapping, None))
+        case FUNCTION => {
+          functions.add(name)
+          table.put(name, new Mapping(typeof, 0, Some(SymbolTable(Some(this)))))
+        }
+        case PARAMETER => {
+          parameters.add(name)
+
+          val tmp = paramOffset + typeof.getSizeInBytes
+          paramOffset = (tmp + (if (tmp < 0) 1 - 4 else 4 - 1)) / 4 * 4
+
+          table.put(name, new Mapping(typeof, paramOffset, None))
+        };
+        case LOCAL => {
+          locals.add(name)
+
+          val tmp = localOffset - typeof.getSizeInBytes
+          localOffset = (tmp + (if (tmp < 0) 1 - 4 else 4 - 1)) / 4 * 4
+
+          table.put(name, new Mapping(typeof, localOffset, None))
+        };
       }
     }
   }
