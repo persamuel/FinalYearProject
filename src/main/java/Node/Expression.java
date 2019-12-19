@@ -250,6 +250,10 @@ public abstract class Expression extends Node {
             }
         }
 
+        public Integer getVal() {
+            return val;
+        }
+
         @Override
         public String toString() {
             return val.toString();
@@ -261,6 +265,10 @@ public abstract class Expression extends Node {
 
         public CharLiteral(Character val) {
             this.val = val;
+        }
+
+        public Character getVal() {
+            return val;
         }
 
         @Override
@@ -288,6 +296,10 @@ public abstract class Expression extends Node {
             if (v.preVisit(this)) {
                 v.postVisit(this);
             }
+        }
+
+        public Boolean getVal() {
+            return val;
         }
 
         @Override
