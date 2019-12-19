@@ -56,7 +56,7 @@ class CodegenVisitor(private val rootTable: SymbolTable) extends Analysis.NodeVi
 
   override def postVisit(node: Expression.BoolLiteral): Unit = {
     if (node.getVal)
-      node.setAttachedAssembly(builder.buildLoadImm("1"))
+      node.setAttachedAssembly(builder.buildLoadImm("255"))
     else
       node.setAttachedAssembly(builder.buildLoadImm("0"))
   }

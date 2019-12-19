@@ -65,7 +65,7 @@ class Accumulatorx86CommandBuilder {
     "movl $0,%eax\n" + // Put false in the accumulator if comparison didn't succeed
     s"jmp $cleanup\n" +
     s"$truepath:\n" +
-    "movl $1,%eax\n" + // Put true in the accumulator if comparison succeeded
+    "movl $255,%eax\n" + // Put true in the accumulator if comparison succeeded
     s"$cleanup:\n" +
     "incl %esp\n" // Cleanup the stack
   }
