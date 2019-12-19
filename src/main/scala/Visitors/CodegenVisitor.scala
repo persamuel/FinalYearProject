@@ -1,27 +1,64 @@
 package Visitors
 
-import Analysis.MyType.{CharHeapArray_T, CharStackArray_T, IntStackArray_T}
+import Analysis.MyType.{CharHeapArray_T, CharStackArray_T, IntHeapArray_T, IntStackArray_T}
 import Codegen.Accumulatorx86CommandBuilder
 import Enviroment.SymbolTable
 import Node._
 import Parser.sym
 
 class CodegenVisitor(private val rootTable: SymbolTable) extends Analysis.NodeVisitor {
-  private val currentFunctionEnv = rootTable
+  private var currentFunctionEnv = rootTable
   private val builder = new Accumulatorx86CommandBuilder
 
-  override def postVisit(node: Expression.Logical): Unit = ???
+  override def postVisit(node: Expression.Logical): Unit = {
+    val tmp = node.getLhs.getAttachedAssembly +
+    builder.buildPush() +
+    node.getRhs.getAttachedAssembly +
+    (node.getOp match {
+      case sym.AND => builder.buildAnd()
+      case sym.OR => builder.buildOr()
+    })
 
-  override def postVisit(node: Expression.Equality): Unit = ???
+    node.setAttachedAssembly(tmp)
+  }
 
-  override def postVisit(node: Expression.Comparison): Unit = ???
+  override def postVisit(node: Expression.Equality): Unit = {
+    val tmp = node.getLhs.getAttachedAssembly +
+    builder.buildPush() +
+    node.getRhs.getAttachedAssembly +
+    (node.getOp match {
+      case sym.EQ => builder.buildCompEQ()
+      case sym.NOTEQ => builder.buildCompNEQ()
+    })
+
+    node.setAttachedAssembly(tmp)
+  }
+
+  override def postVisit(node: Expression.Comparison): Unit = {
+    val tmp = node.getLhs.getAttachedAssembly +
+    builder.buildPush() +
+    node.getRhs.getAttachedAssembly +
+    (node.getOp match {
+      case sym.GT => builder.buildCompGT()
+      case sym.GTE => builder.buildCompGTE()
+      case sym.LT => builder.buildCompLT()
+      case sym.LTE => builder.buildCompLTE()
+    })
+
+    node.setAttachedAssembly(tmp)
+  }
 
   override def postVisit(node: Expression.Arithmetic): Unit = {
-    node.getOp match {
-      case sym.PLUS => node.setAttachedAssembly(builder.buildPlus())
-      case sym.MINUS => node.setAttachedAssembly(builder.buildMinus())
-      case sym.MULTI => node.setAttachedAssembly(builder.buildMulti())
-    }
+    val tmp = node.getLhs.getAttachedAssembly +
+      builder.buildPush() +
+      node.getRhs.getAttachedAssembly +
+      (node.getOp match {
+        case sym.PLUS => builder.buildPlus()
+        case sym.MINUS => builder.buildMinus()
+        case sym.MULTI => builder.buildMulti()
+      })
+
+    node.setAttachedAssembly(tmp)
   }
 
   override def postVisit(node: Expression.ArrayAccess): Unit = {
@@ -30,9 +67,12 @@ class CodegenVisitor(private val rootTable: SymbolTable) extends Analysis.NodeVi
     // if the array is on the stack we can just adjust the BP offset
     // if the array is on the heap we have to indirectly access it
 
-
     if (node.getName.getAttachedType.isInstanceOf[CharStackArray_T]) {
       // load offset + (index * charsize)(%ebp)
+      val tmp = node.getIdx.getAttachedAssembly
+
+      node.setAttachedAssembly(builder.buildLoad(s"${offset + node.g}"))
+
     }
     else if (node.getName.getAttachedType.isInstanceOf[IntStackArray_T]) {
       // load offset + (index * intsize)(%ebp)
@@ -41,6 +81,9 @@ class CodegenVisitor(private val rootTable: SymbolTable) extends Analysis.NodeVi
       // load address into acc
       // add to address
       // load that value into the acc
+    }
+    else {
+
     }
   }
 
@@ -64,14 +107,21 @@ class CodegenVisitor(private val rootTable: SymbolTable) extends Analysis.NodeVi
   override def postVisit(node: Expression.Identifier): Unit = {
     val offset = currentFunctionEnv.lookupMapping(node.getName).get.offset
 
-    node.setAttachedAssembly(builder.buildLoad(s"$offset(%ebp)"))
+    if (node.getAttachedType.isInstanceOf[CharStackArray_T] || node.getAttachedType.isInstanceOf[IntStackArray_T])
+      node.setAttachedAssembly(builder.buildLoadEff(s"$offset(%ebp)"))
+    else
+      node.setAttachedAssembly(builder.buildLoad(s"$offset(%ebp)"))
   }
 
-  override def postVisit(node: Expression.NewArray): Unit = ???
+  override def postVisit(node: Expression.NewArray): Unit = {
 
-  override def postVisit(node: Expression.Negated): Unit = ???
+  }
 
-  override def postVisit(node: FunctionBody): Unit = ???
+  override def postVisit(node: Expression.Negated): Unit = {
+    node.setAttachedAssembly(node.getExp.getAttachedAssembly + builder.buildNegate())
+  }
+
+  override def postVisit(node: FunctionBody): Unit = {}
 
   override def postVisit(node: FunctionDeclaration): Unit = ???
 
@@ -81,6 +131,7 @@ class CodegenVisitor(private val rootTable: SymbolTable) extends Analysis.NodeVi
     // reserve space
 
     // go back up to higher scope
+    currentFunctionEnv = currentFunctionEnv.parent.get
   }
 
   override def postVisit(node: FunctionSignature): Unit = {

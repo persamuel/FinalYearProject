@@ -24,6 +24,10 @@ class Accumulatorx86CommandBuilder {
     s"movl $loc,%eax\n"
   }
 
+  def buildLoadEff(loc: String): String = {
+    s"leal $loc,%eax\n"
+  }
+
   def buildLoadImm(value: String): String = {
     s"movl $$$value,%eax\n"
   }
@@ -75,8 +79,7 @@ class Accumulatorx86CommandBuilder {
   }
 
   def buildJumpTrue(loc: String): String = {
-    // compare %eax with value 1, if true jump
-    "cmpl $1,%eax\n" +
+    "cmpl $255,%eax\n" +
     s"je $loc\n"
   }
 
@@ -98,6 +101,16 @@ class Accumulatorx86CommandBuilder {
   /*def buildDIVIDE(): String = {
     ""
   }*/
+
+  def buildAnd(): String = {
+    "andl (%esp),%eax\n" +
+    "incl %esp\n"
+  }
+
+  def buildOr(): String = {
+    "orl (%esp),%eax\n" +
+    "incl %esp\n"
+  }
 
   def buildNegate(): String = {
     "negl %eax"
