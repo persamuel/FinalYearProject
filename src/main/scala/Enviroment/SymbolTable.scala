@@ -72,6 +72,8 @@ class SymbolTable(val parent: Option[SymbolTable]) {
     }
   }
 
+  def roomNeeded(): Int = localOffset
+
   def keys(category: SymbolCategory) = {
     category match {
       case FUNCTION => functions.toList

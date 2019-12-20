@@ -193,7 +193,7 @@ class TypeCheckVisitor extends NodeVisitor {
       handleDeclarationSignature(node)
     }
     else {
-      handleDefintionSignature(node)
+      handleDefinitionSignature(node)
     }
 
     node.setAttachedType(new Unit_T)
@@ -212,7 +212,7 @@ class TypeCheckVisitor extends NodeVisitor {
     decls.add(node.getName)
   }
 
-  def handleDefintionSignature(node: FunctionSignature) = {
+  def handleDefinitionSignature(node: FunctionSignature) = {
     val mapping = currentFunctionEnv.lookupMapping(node.getName)
 
     if (mapping.isDefined) {
