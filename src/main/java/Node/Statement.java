@@ -220,6 +220,10 @@ public abstract class Statement extends Node {
             this.val = val;
         }
 
+        public Expression getVal() {
+            return val;
+        }
+
         @Override
         public void accept(NodeVisitor v) {
             if (v.preVisit(this)) {

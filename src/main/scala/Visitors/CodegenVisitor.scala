@@ -9,6 +9,7 @@ import collection.JavaConverters._
 
 class CodegenVisitor(private val rootTable: SymbolTable) extends Analysis.NodeVisitor {
   private var declFlag = true
+  private var currentFunctionName = ""
   private var currentFunctionEnv = rootTable
   private val builder = new Accumulatorx86CommandBuilder
 
@@ -64,8 +65,6 @@ class CodegenVisitor(private val rootTable: SymbolTable) extends Analysis.NodeVi
   }
 
   override def postVisit(node: Expression.ArrayAccess): Unit = {
-    val offset = currentFunctionEnv.lookupMapping(node.getName.toString).get.offset
-
     if (node.getName.getAttachedType.isInstanceOf[CharStackArray_T] || node.getName.getAttachedType.isInstanceOf[CharHeapArray_T]) {
       val tmp = node.getName.getAttachedAssembly +
       builder.buildPush +
@@ -87,7 +86,16 @@ class CodegenVisitor(private val rootTable: SymbolTable) extends Analysis.NodeVi
   }
 
   override def postVisit(node: Expression.Call): Unit = {
+    var tmp = ""
+    val args = node.getArgs.asScala.toList.reverse
 
+    for (arg <- args) {
+      tmp += arg.getAttachedAssembly // Evaluate the argument
+      tmp += builder.buildPush // Push it onto the stack
+    }
+
+    tmp += s"call ${node.getName}\n"
+    tmp += s"addl ${4 * args.length},%esp\n"
   }
 
   override def postVisit(node: Expression.IntLiteral): Unit = {
@@ -142,7 +150,7 @@ class CodegenVisitor(private val rootTable: SymbolTable) extends Analysis.NodeVi
   }
 
   override def postVisit(node: FunctionDefinition): Unit = {
-    val label = builder.newLabel()
+    val label = currentFunctionName
     val tmp = s".type $label,@function\n" +
     s"$label:\n" +
     "pushl %ebp\n" + // Save the old base pointer
@@ -162,6 +170,7 @@ class CodegenVisitor(private val rootTable: SymbolTable) extends Analysis.NodeVi
   override def postVisit(node: FunctionSignature): Unit = {
     // go into scope if it is passed the main function
     if (!declFlag) {
+      currentFunctionName = node.getName
       currentFunctionEnv = currentFunctionEnv.lookupMapping(node.getName).get.enviroment.get
     }
   }
@@ -170,6 +179,7 @@ class CodegenVisitor(private val rootTable: SymbolTable) extends Analysis.NodeVi
   override def preVisit(node: MainFunction): Boolean = {
     declFlag = false
 
+    currentFunctionName = "main"
     currentFunctionEnv = currentFunctionEnv.lookupMapping("main").get.enviroment.get
 
     true
@@ -187,33 +197,88 @@ class CodegenVisitor(private val rootTable: SymbolTable) extends Analysis.NodeVi
     currentFunctionEnv = currentFunctionEnv.parent.get
   }
 
-  override def postVisit(node: Parameter): Unit = ???
+  override def postVisit(node: Parameter): Unit = {
+    // Do nothing
+  }
 
   override def postVisit(node: Program): Unit = {
     val datasection = ".section .data\n" +
-    "print_int:" +
+    "print_int:\n" +
     ".ascii \"%d\n\"" +
-    "print_str:" +
+    "print_str:\n" +
     ".ascii \"%s\n\"" +
-    "print_arr:" +
-    ".ascii \"%p\"" +
-    "print_char:" +
+    "print_arr:\n" +
+    ".ascii \"%p\n\"" +
+    "print_char:\n" +
     ".ascii \"%c\n\"" +
-    "print_true:" +
+    "print_true:\n" +
     ".ascii \"True\n\"" +
-    "print_false:" +
+    "print_false:\n" +
     ".ascii \"False\n\""
+
+    val codesection = ""
   }
 
-  override def postVisit(node: Statement.Compound): Unit = ???
+  override def postVisit(node: Statement.Compound): Unit = {
+    var tmp = ""
 
-  override def postVisit(node: Statement.IfThenElse): Unit = ???
+    for (stm <- node.getStms.asScala.toList) {
+      tmp += stm.getAttachedAssembly
+    }
 
-  override def postVisit(node: Statement.While): Unit = ???
+    node.setAttachedAssembly(tmp)
+  }
 
-  override def postVisit(node: Statement.Assign): Unit = ???
+  override def postVisit(node: Statement.IfThenElse): Unit = {
+    val thenlabel = builder.newLabel
+    val endlabel = builder.newLabel
 
-  override def postVisit(node: Statement.ArrayAssign): Unit = ???
+    val tmp = node.getCond.getAttachedAssembly +
+    builder.buildJumpTrue(thenlabel) +
+    node.getElse.getAttachedAssembly +
+    builder.buildJump(endlabel) +
+    s"$thenlabel:\n" +
+    node.getThen.getAttachedAssembly +
+    s"$endlabel:\n"
+
+    node.setAttachedAssembly(tmp)
+  }
+
+  override def postVisit(node: Statement.While): Unit = {
+    val loopstart = builder.newLabel
+    val loopbody = builder.newLabel
+    val loopend = builder.newLabel
+
+    val tmp = s"$loopstart:\n" +
+    node.getCond.getAttachedAssembly +
+    builder.buildJumpTrue(loopbody) +
+    builder.buildJump(loopend) +
+    s"$loopbody:\n" +
+    node.getBody.getAttachedAssembly +
+    builder.buildJump(loopstart) +
+    s"$loopend:\n"
+
+    node.setAttachedAssembly(tmp)
+  }
+
+  override def postVisit(node: Statement.Assign): Unit = {
+    val mapping = currentFunctionEnv.lookupMapping(node.getName).get
+
+    val tmp = node.getVal.getAttachedAssembly +
+    builder.buildPush() +
+    (if (mapping.typeof.isInstanceOf[CharStackArray_T] || mapping.typeof.isInstanceOf[IntStackArray_T])
+      builder.buildLoadEff(s"${mapping.offset}(%ebp)")
+    else
+      builder.buildLoad(s"${mapping.offset}(%ebp)")) +
+    "movl (%esp),(%eax)\n" +
+    "incl %esp\n"
+
+    node.setAttachedAssembly(tmp)
+  }
+
+  override def postVisit(node: Statement.ArrayAssign): Unit = {
+
+  }
 
   override def postVisit(node: Statement.Free): Unit = {
     val mapping = currentFunctionEnv.lookupMapping(node.getName).get
@@ -229,13 +294,29 @@ class CodegenVisitor(private val rootTable: SymbolTable) extends Analysis.NodeVi
     node.setAttachedAssembly(tmp)
   }
 
-  override def postVisit(node: Statement.Print): Unit = ???
+  override def postVisit(node: Statement.Print): Unit = {
+    val typeof = node.getVal.getAttachedType
 
-  override def postVisit(node: TypeLabel.Primitive): Unit = ???
+    typeof match {
+      case _:Int_T =>
+      case _:Char_T =>
+      case _:Bool_T =>
+    }
+  }
 
-  override def postVisit(node: TypeLabel.StackArray): Unit = ???
+  override def postVisit(node: TypeLabel.Primitive): Unit = {
+    // Do Nothing
+  }
 
-  override def postVisit(node: TypeLabel.HeapArray): Unit = ???
+  override def postVisit(node: TypeLabel.StackArray): Unit = {
+    // Do Nothing
+  }
 
-  override def postVisit(node: VariableDeclaration): Unit = ???
+  override def postVisit(node: TypeLabel.HeapArray): Unit =  {
+    // Do Nothing
+  }
+
+  override def postVisit(node: VariableDeclaration): Unit = {
+    // Do Nothing
+  }
 }
