@@ -65,20 +65,26 @@ class CodegenVisitor(private val rootTable: SymbolTable) extends Analysis.NodeVi
   }
 
   override def postVisit(node: Expression.ArrayAccess): Unit = {
+
     if (node.getName.getAttachedType.isInstanceOf[CharStackArray_T] || node.getName.getAttachedType.isInstanceOf[CharHeapArray_T]) {
-      val tmp = node.getName.getAttachedAssembly +
-      builder.buildPush +
-      node.getIdx.getAttachedAssembly +
-      builder.buildLoad("(%esp,%eax,1)") +
+      val tmp = node.getIdx.getAttachedAssembly ++
+      builder.buildPush ++
+      node.getName.getAttachedAssembly ++
+      builder.buildPlus ++
+      builder.buildLoad("(%eax)") ++
       "incl %esp\n"
 
       node.setAttachedAssembly(tmp)
     }
-    else if (node.getName.getAttachedType.isInstanceOf[IntStackArray_T] || node.getName.getAttachedType.isInstanceOf[IntStackArray_T]) {
-      val tmp = node.getName.getAttachedAssembly +
-      builder.buildPush +
-      node.getIdx.getAttachedAssembly +
-      builder.buildLoad("(%esp,%eax,4)") +
+    else if (node.getName.getAttachedType.isInstanceOf[IntStackArray_T] || node.getName.getAttachedType.isInstanceOf[IntHeapArray_T]) {
+      val tmp = node.getIdx.getAttachedAssembly ++
+      builder.buildPush ++
+      builder.buildLoadImm("4")
+      builder.buildMulti ++
+      builder.buildPush ++
+      node.getName.getAttachedAssembly ++
+      builder.buildPlus ++
+      builder.buildLoad("(%eax)") ++
       "incl %esp\n"
 
       node.setAttachedAssembly(tmp)
@@ -216,7 +222,13 @@ class CodegenVisitor(private val rootTable: SymbolTable) extends Analysis.NodeVi
     "print_false:\n" +
     ".ascii \"False\n\""
 
-    val codesection = ""
+    var codesection = ".section .text\n" +
+    node.getMainFunction.getAttachedAssembly
+
+    for (fun <- node.getDefinitions.asScala.toList)
+      codesection += fun.getAttachedAssembly
+
+    node.setAttachedAssembly(datasection + codesection)
   }
 
   override def postVisit(node: Statement.Compound): Unit = {
@@ -277,7 +289,62 @@ class CodegenVisitor(private val rootTable: SymbolTable) extends Analysis.NodeVi
   }
 
   override def postVisit(node: Statement.ArrayAssign): Unit = {
+    val mapping = currentFunctionEnv.lookupMapping(node.getName).get
 
+    if (mapping.typeof.isInstanceOf[CharStackArray_T]) {
+      val tmp = node.getIdx.getAttachedAssembly ++ // Compute the index
+      builder.buildPush ++ // Push the index to the stack
+      builder.buildLoadEff(s"${mapping.offset}(%ebp)") // Load the address of the start of the array
+      builder.buildPlus ++ // Add the index on the ToS to the array start
+      builder.buildPush ++ // Push the address computed onto the stack
+      node.getVal.getAttachedAssembly ++ // Compute the value
+      builder.buildStore("(%esp)") ++ // Store the value at the address computed
+      "incl %esp\n"
+
+      node.setAttachedAssembly(tmp)
+    }
+    else if (mapping.typeof.isInstanceOf.isInstanceOf[CharHeapArray_T]) {
+      val tmp = node.getIdx.getAttachedAssembly ++ // Compute the index
+      builder.buildPush ++ // Push the index to the stack
+      builder.buildLoad(s"${mapping.offset}(%ebp)") // Load the address of the start of the array
+      builder.buildPlus ++ // Add the index on the ToS to the array start
+      builder.buildPush ++ // Push the address computed onto the stack
+      node.getVal.getAttachedAssembly ++ // Compute the value
+      builder.buildStore("(%esp)") ++ // Store the value at the address computed
+      "incl %esp\n"
+
+      node.setAttachedAssembly(tmp)
+    }
+    else if (mapping.typeof.isInstanceOf.isInstanceOf[IntStackArray_T]) {
+      val tmp = node.getIdx.getAttachedAssembly ++ // Compute the index
+      builder.buildPush ++ // Push the index to the stack
+      builder.buildLoadImm("4") ++
+      builder.buildMulti ++
+      builder.buildPush ++
+      builder.buildLoadEff(s"${mapping.offset}(%ebp)") // Load the address of the start of the array
+      builder.buildPlus ++ // Add the index on the ToS to the array start
+      builder.buildPush ++ // Push the address computed onto the stack
+      node.getVal.getAttachedAssembly ++ // Compute the value
+      builder.buildStore("(%esp)") ++ // Store the value at the address computed
+      "incl %esp\n"
+
+      node.setAttachedAssembly(tmp)
+    }
+    else if (mapping.typeof.isInstanceOf.isInstanceOf[IntHeapArray_T]) {
+      val tmp = node.getIdx.getAttachedAssembly ++ // Compute the index
+      builder.buildPush ++ // Push the index to the stack
+      builder.buildLoadImm("4") ++
+      builder.buildMulti ++
+      builder.buildPush ++
+      builder.buildLoad(s"${mapping.offset}(%ebp)") // Load the address of the start of the array
+      builder.buildPlus ++ // Add the index on the ToS to the array start
+      builder.buildPush ++ // Push the address computed onto the stack
+      node.getVal.getAttachedAssembly ++ // Compute the value
+      builder.buildStore("(%esp)") ++ // Store the value at the address computed
+      "incl %esp\n"
+
+      node.setAttachedAssembly(tmp)
+    }
   }
 
   override def postVisit(node: Statement.Free): Unit = {
@@ -297,11 +364,34 @@ class CodegenVisitor(private val rootTable: SymbolTable) extends Analysis.NodeVi
   override def postVisit(node: Statement.Print): Unit = {
     val typeof = node.getVal.getAttachedType
 
-    typeof match {
-      case _:Int_T =>
-      case _:Char_T =>
-      case _:Bool_T =>
+    val tmp = node.getVal.getAttachedAssembly +
+    (if (typeof.isInstanceOf[Bool_T]) {
+      val tlabel = builder.newLabel
+      val endlabel = builder.newLabel
+      builder.buildJumpTrue(tlabel) +
+      "pushl $print_false\n" +
+      builder.buildJump(endlabel) +
+      s"$tlabel:" +
+      "pushl $print_true\n" +
+      s"$endlabel:" +
+      "call printf\n" +
+      "incl %esp\n"
     }
+    else {
+      builder.buildPush() +
+      (typeof match {
+        case _:Int_T => "pushl $print_int\n"
+        case _:Char_T => "pushl $print_char\n"
+        case _:IntStackArray_T => "pushl $print_arr\n"
+        case _:IntHeapArray_T => "pushl $print_arr\n"
+        case _:CharStackArray_T => "pushl $print_str\n"
+        case _:CharHeapArray_T => "pushl $print_str\n"
+      }) +
+      "call printf\n" +
+      "addl $8,%esp"
+    })
+
+    node.setAttachedAssembly(tmp)
   }
 
   override def postVisit(node: TypeLabel.Primitive): Unit = {
