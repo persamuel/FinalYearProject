@@ -11,7 +11,7 @@ import scala.collection.mutable.LinkedHashSet
 import collection.JavaConverters._
 
 class TypeCheckVisitor extends NodeVisitor {
-  private val rootTable: SymbolTable = SymbolTable(None)
+  val rootTable: SymbolTable = SymbolTable(None)
 
   private val decls = LinkedHashSet.empty[String]
   private var declFlag: Boolean = true
