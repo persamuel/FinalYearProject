@@ -24,6 +24,10 @@ class Accumulatorx86CommandBuilder {
     s"movl $loc,%eax\n"
   }
 
+  def buildLoadByte(loc: String): String = {
+    s"movb $loc,%eax\n"
+  }
+
   def buildLoadEff(loc: String): String = {
     s"leal $loc,%eax\n"
   }

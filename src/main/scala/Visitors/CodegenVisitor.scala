@@ -71,7 +71,7 @@ class CodegenVisitor(private val rootTable: SymbolTable) extends Analysis.NodeVi
       builder.buildPush ++
       node.getName.getAttachedAssembly ++
       builder.buildPlus ++
-      builder.buildLoad("(%eax)") ++
+      builder.buildLoadByte("(%eax)") ++
       "incl %esp\n"
 
       node.setAttachedAssembly(tmp)
@@ -101,7 +101,7 @@ class CodegenVisitor(private val rootTable: SymbolTable) extends Analysis.NodeVi
     }
 
     tmp += s"call ${node.getName}\n"
-    tmp += s"addl ${4 * args.length},%esp\n"
+    tmp += s"addl $$${4 * args.length},%esp\n"
 
     node.setAttachedAssembly(tmp)
   }
@@ -163,7 +163,7 @@ class CodegenVisitor(private val rootTable: SymbolTable) extends Analysis.NodeVi
     s"$label:\n" ++
     "pushl %ebp\n" ++ // Save the old base pointer
     "movl %esp,%ebp\n" ++ // Make the stack pointer the base pointer
-    s"subl ${currentFunctionEnv.roomNeeded},%esp\n" ++ // Allocate room needed for local storage
+    s"subl $$${Math.abs(currentFunctionEnv.roomNeeded)},%esp\n" ++ // Allocate room needed for local storage
     node.getBody.getAttachedAssembly ++
     "movl %ebp,%esp\n" ++ // Restore the stack pointer
     "popl %ebp\n" ++ // Restore the base pointer
