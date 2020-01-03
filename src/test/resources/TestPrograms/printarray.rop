@@ -1,0 +1,42 @@
+int printarray(int[] A, int n);
+
+/* The output on stdout should be 120,240,360,480,600
+ */
+int main(int argc, char[][] argv) {
+    int[3] stack;
+    int[] heap;
+    int tmp;
+
+    stack[0] = 120;
+    stack[1] = 240;
+    stack[2] = 360;
+
+    tmp = printarray(stack, 3);
+
+    heap = new int[2];
+
+    heap[0] = 480;
+    heap[1] = 600;
+
+    tmp = printarray(heap, 2);
+
+    free heap;
+
+    return 0;
+}
+
+int printarray(int[] A, int n) {
+    int i;
+
+    i = 0;
+    while (i < n) {
+        print(A[i]);
+        i = i + 1;
+        if (i < n)
+            print(',');
+        else
+            i = i; // Do nothing
+    }
+
+    return 1;
+}

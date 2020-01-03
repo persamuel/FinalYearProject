@@ -1,0 +1,57 @@
+char[] concat(char[] s1, char[] s2);
+int strlen(char[] s);
+
+/* The output on stdout should be the concatenation of the first two arguments
+ */
+int main(int argc, char[][] argv) {
+    char[] tmp;
+
+    tmp = concat(argv[0], argv[1]);
+    print(tmp);
+    free tmp;
+
+    return 0;
+}
+
+char[] concat(char[] s1, char[] s2) {
+    char[] tmp;
+    int n;
+    int i;
+    int m;
+    int j;
+
+    n = strlen(s1);
+    m = strlen(s2);
+
+    tmp = new char[n + m + 1];
+
+    j = 0;
+    i = 0;
+    while (i < n) {
+        tmp[j] = s1[i];
+        j = j + 1;
+        i = i + 1;
+    }
+
+    i = 0;
+    while (i < m) {
+        tmp[j] = s2[i];
+        j = j + 1;
+        i = i + 1;
+    }
+
+    tmp[j] = 0;
+
+    return tmp;
+}
+
+int strlen(char[] s) {
+    int i;
+
+    i = 0;
+    while (s[i] != 0) {
+        i = i + 1;
+    }
+
+    return i;
+}

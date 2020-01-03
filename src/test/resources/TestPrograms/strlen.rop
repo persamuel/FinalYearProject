@@ -1,0 +1,45 @@
+int strlen(char[] s);
+
+/* The output on stdout should be 5,6
+ */
+int main(int argc, char[][] argv) {
+    char[6] stack;
+    char[] heap;
+
+    stack[0] = 'h';
+    stack[1] = 'e';
+    stack[2] = 'l';
+    stack[3] = 'l';
+    stack[4] = 'o';
+    stack[5] = 0;
+
+    print(strlen(stack));
+
+    print(',');
+
+    heap = new char[7];
+    heap[0] = 'h';
+    heap[1] = 'e';
+    heap[2] = 'l';
+    heap[3] = 'l';
+    heap[4] = 'o';
+    heap[5] = '!';
+    heap[6] = 0;
+
+    print(strlen(heap));
+
+    free heap;
+
+    return 0;
+}
+
+int strlen(char[] s) {
+    int i;
+
+    i = 0;
+    while (s[i] != 0) {
+        i = i + 1;
+    }
+
+    return i;
+}

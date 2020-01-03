@@ -1,5 +1,7 @@
 int strcpy(char[] src, char[] dest);
 
+/* The output on stdout should be identical to what was passed as the first argument.
+ */
 int main(int argc, char[][] argv) {
     int tmp;
     char[500] buf;
@@ -12,12 +14,13 @@ int main(int argc, char[][] argv) {
 
 int strcpy(char[] src, char[] dest) {
     int i;
-    i = 0;
 
+    i = 0;
     while (src[i] != 0) {
         dest[i] = src[i];
         i = i + 1;
     }
+    dest[i] = 0;
 
     return 1;
 }

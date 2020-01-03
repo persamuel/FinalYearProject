@@ -67,13 +67,13 @@ class Accumulatorx86CommandBuilder {
   private def buildComp(op: String): String = {
     val truepath = newLabel()
     val cleanup = newLabel()
-
-    "cmpl %eax,(%esp)\n" + // Compare the accumulator and the top of the stack
+    // todo: Check the ordering of this instruction
+    "cmpl (%esp),%eax\n" + // Compare the accumulator and the top of the stack
     s"$op $truepath\n" + // Jump based on the operator chosen
-    "movl $0,%eax\n" + // Put false in the accumulator if comparison didn't succeed
+    "movb $0,%eax\n" + // Put false in the accumulator if comparison didn't succeed
     s"jmp $cleanup\n" +
     s"$truepath:\n" +
-    "movl $255,%eax\n" + // Put true in the accumulator if comparison succeeded
+    "movb $255,%eax\n" + // Put true in the accumulator if comparison succeeded
     s"$cleanup:\n" +
     "incl %esp\n" // Cleanup the stack
   }
@@ -83,7 +83,7 @@ class Accumulatorx86CommandBuilder {
   }
 
   def buildJumpTrue(loc: String): String = {
-    "cmpl $255,%eax\n" +
+    "cmpb $255,%eax\n" +
     s"je $loc\n"
   }
 

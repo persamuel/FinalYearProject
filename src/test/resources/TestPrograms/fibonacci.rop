@@ -1,0 +1,19 @@
+int fibonacci(int n);
+
+/* The output on stdout should be 34
+ */
+int main(int argc, char[][] argv) {
+    print(fibonacci(9));
+    return 0;
+}
+
+int fibonacci(int n) {
+    int x;
+
+    if (n <= 1)
+        x = n;
+    else
+        x = fibonacci(n - 1) + fibonacci(n - 2);
+
+    return x;
+}

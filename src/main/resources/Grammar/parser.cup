@@ -48,16 +48,16 @@ nonterminal	TypeLabel			        primitive_type;
 nonterminal	TypeLabel			        stack_array;
 nonterminal	TypeLabel			        heap_array;
 
-/* Precedences */
+/* Precedences, note further down the page the higher the precedence */
 
-precedence left			LBRACK, RBRACK;
-precedence right 		NOT;
-precedence left 		MULTI;
-precedence left 		PLUS, MINUS;
-precedence left 		LT, LTE, GT, GTE;
-precedence left 		EQEQ, NOTEQ;
-precedence left 		AND;
 precedence left 		OR;
+precedence left 		AND;
+precedence left 		EQEQ, NOTEQ;
+precedence left 		LT, LTE, GT, GTE;
+precedence left 		PLUS, MINUS;
+precedence left 		MULTI;
+precedence right 		NOT;
+precedence left			LBRACK, RBRACK;
 
 /* Grammar */
 

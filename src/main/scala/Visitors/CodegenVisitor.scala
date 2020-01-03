@@ -212,17 +212,17 @@ class CodegenVisitor(private val rootTable: SymbolTable) extends Analysis.NodeVi
   override def postVisit(node: Program): Unit = {
     val datasection = ".section .data\n" ++
     "print_int:\n" ++
-    ".ascii \"%d\"\n" ++
+    ".ascii \"%d\\0\"\n" ++
     "print_str:\n" ++
-    ".ascii \"%s\"\n" ++
+    ".ascii \"%s\\0\"\n" ++
     "print_arr:\n" ++
-    ".ascii \"%p\"\n" ++
+    ".ascii \"%p\\0\"\n" ++
     "print_char:\n" ++
-    ".ascii \"%c\"\n" ++
+    ".ascii \"%c\\0\"\n" ++
     "print_true:\n" ++
-    ".ascii \"True\"\n" ++
+    ".ascii \"True\\0\"\n" ++
     "print_false:\n" ++
-    ".ascii \"False\"\n"
+    ".ascii \"False\\0\"\n"
 
     var codesection = ".section .text\n" ++
     node.getMainFunction.getAttachedAssembly

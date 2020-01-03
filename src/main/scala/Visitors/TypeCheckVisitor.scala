@@ -130,7 +130,7 @@ class TypeCheckVisitor extends NodeVisitor {
   override def postVisit(node: Expression.NewArray): Unit = {
     val len = node.getLength.getAttachedType
 
-    if (!len.isInstanceOf[Char_T] || !len.isInstanceOf[Int_T]) {
+    if (!len.isInstanceOf[Char_T] && !len.isInstanceOf[Int_T]) {
       throw TypeCheckingException(s"Error: Unable to use ${node.getLength.toString} as array size in ${node.toString}.")
     }
 
@@ -357,7 +357,9 @@ class TypeCheckVisitor extends NodeVisitor {
 
     (mapping.get.typeof, assignment) match {
       case (_: CharStackArray_T, _: Char_T) | (_: CharHeapArray_T, _: Char_T) => node.setAttachedType(new Unit_T)
+      case (_: CharStackArray_T, _: Int_T) | (_: CharHeapArray_T, _: Int_T)   => node.setAttachedType(new Unit_T)
       case (_: IntStackArray_T, _: Int_T) | (_: IntHeapArray_T, _: Int_T)     => node.setAttachedType(new Unit_T)
+      case (_: IntStackArray_T, _: Char_T) | (_: IntHeapArray_T, _: Char_T)   => node.setAttachedType(new Unit_T)
       case (_: StringArray_T, _: CharHeapArray_T)                             => node.setAttachedType(new Unit_T)
       case _                                                                  => throw TypeCheckingException(s"Error: Types do not match in assignment ${node.toString}.")
     }
@@ -416,12 +418,12 @@ class TypeCheckVisitor extends NodeVisitor {
       throw TypeCheckingException(s"Error: Incorrect number of arguments provided in $errorLine.")
     }
 
-    // Stack arrays can be passed to other functions as the pointer will just be copied, will lose size info though
-    for (p1 <- expected; p2 <- actual) {
-      if ((p1.typeof.getClass != p2.getAttachedType.getClass) &&
-          !(p1.typeof.isInstanceOf[IntHeapArray_T] && p2.getAttachedType.isInstanceOf[IntStackArray_T]) &&
-          !(p1.typeof.isInstanceOf[CharHeapArray_T] && p2.getAttachedType.isInstanceOf[CharStackArray_T])) {
-         throw TypeCheckingException(s"Error: Actual argument types don't match expected ones in $errorLine.")
+    for (i <- 0 to actual.length - 1) {
+      // Stack arrays can be passed to other functions as the pointer will just be copied, will lose size info though
+      if ((expected(i).typeof.getClass != actual(i).getAttachedType.getClass) &&
+          !(expected(i).typeof.isInstanceOf[IntHeapArray_T] && actual(i).getAttachedType.isInstanceOf[IntStackArray_T]) &&
+          !(expected(i).typeof.isInstanceOf[CharHeapArray_T] && actual(i).getAttachedType.isInstanceOf[CharStackArray_T])) {
+        throw TypeCheckingException(s"Error: Actual argument types don't match expected ones in $errorLine.")
       }
     }
   }

@@ -1,6 +1,7 @@
 package Lexer;
 
 import Parser.sym;
+import java_cup.runtime.Symbol;
 
 %%
 
@@ -27,17 +28,17 @@ import Parser.sym;
 
 /* Macros */
 
-EOL 				= \r|\n|\r\n
-WhiteSpace 			= {EOL} | [ \t\f]
-InputCharacter		= [^\r\n]
+EOL 				    = \r|\n|\r\n
+WhiteSpace 			    = {EOL} | [ \t\f]
+InputCharacter		    = [^\r\n]
 
-Comment				= {LineComment} | {BlockComment}
-LineComment			= "//" {InputCharacter}* {EOL}?
-BlockComment		= "/*" [^*] ~"*/" | "/*" "*"+ "/"
+Comment				    = {LineComment} | {BlockComment}
+LineComment			    = "//" {InputCharacter}* {EOL}?
+BlockComment		    = "/*" [^*] ~"*/" | "/*" "*"+ "/"
 
-Identifier 			= [:jletter:] [:jletterdigit:]*
-IntegerLiteral 		= 0 | [1-9][0-9]*
-CharacterLiteral 	= "'" [:jletter:] "'"
+Identifier 			    = [:jletter:] [:jletterdigit:]*
+IntegerLiteral 		    = 0 | [1-9][0-9]*
+ASCIICharacterLiteral 	= \'[[!-~ ]--\']\'
 
 %%
 
@@ -94,7 +95,15 @@ CharacterLiteral 	= "'" [:jletter:] "'"
 		
 	/* Other Literals */
 	
-	{CharacterLiteral}			{ return symbol(sym.CHARACTER_LITERAL, yytext().charAt(1)); }
+	{ASCIICharacterLiteral}		{ return symbol(sym.CHARACTER_LITERAL, yytext().charAt(1)); }
+	\' \\b \'                   { return symbol(sym.CHARACTER_LITERAL, '\b'); }
+	\' \\f \'                   { return symbol(sym.CHARACTER_LITERAL, '\f'); }
+	\' \\n \'                   { return symbol(sym.CHARACTER_LITERAL, '\n'); }
+	\' \\t \'                   { return symbol(sym.CHARACTER_LITERAL, '\t'); }
+	\' \\0 \'                   { return symbol(sym.CHARACTER_LITERAL, '\0'); }
+	\' \\' \'                   { return symbol(sym.CHARACTER_LITERAL, '\''); }
+	\' \\\\ \'                   { return symbol(sym.CHARACTER_LITERAL, '\\'); }
+
 	{IntegerLiteral}			{ return symbol(sym.INTEGER_LITERAL, Integer.parseInt(yytext())); }
 	
 	/* Comments */
