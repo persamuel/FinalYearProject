@@ -1,0 +1,52 @@
+int max(int[] A, int n);
+
+/* The output on stdout should be 8,9
+ */
+int main(int argc, char[][] argv) {
+    int[5] stack;
+    int[] heap;
+    int n;
+
+    n = 5;
+    stack[0] = 5;
+    stack[1] = 2;
+    stack[2] = 7;
+    stack[3] = 8;
+    stack[4] = 1;
+
+    print(max(stack, n));
+
+    print(',');
+
+    n = 6;
+    heap = new int[6];
+    heap[0] = 5;
+    heap[1] = 2;
+    heap[2] = 7;
+    heap[3] = 9;
+    heap[4] = 1;
+    heap[5] = 6;
+
+    print(max(heap, n));
+
+    free heap;
+
+    return 0;
+}
+
+int max(int[] A, int n) {
+    int max;
+    int i;
+
+    i = 0;
+    max = A[i];
+    while (i < n) {
+        if (A[i] > max)
+            max = A[i];
+        else
+            i = i; // Do nothing.
+        i = i + 1;
+    }
+
+    return max;
+}

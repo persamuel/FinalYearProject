@@ -2,6 +2,7 @@ package Node;
 
 import Analysis.NodeVisitor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Program extends Node {
@@ -10,7 +11,7 @@ public class Program extends Node {
     private List<FunctionDefinition> defs;
 
     public Program(MainFunction main) {
-        this(null, main, null);
+        this(new ArrayList<>(), main, new ArrayList<>());
     }
 
     public Program(List<FunctionDeclaration> decls, MainFunction main, List<FunctionDefinition> defs) {

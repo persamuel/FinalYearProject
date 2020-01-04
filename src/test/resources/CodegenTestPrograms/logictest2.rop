@@ -1,0 +1,26 @@
+/* The output on stdout should be the sequence shown by the comments
+ */
+int main(int argc, char[][] argv) {
+
+    print((4 < 5) && (4 < 5));      // True
+    print(',');
+    print((4 > 5) && (4 < 5));      // False
+    print(',');
+    print((4 < 5) && (4 > 5));      // False
+    print(',');
+    print((4 > 5) && (4 > 5));      // False
+    print(',');
+    print((4 < 5) || (4 < 5));      // True
+    print(',');
+    print((4 > 5) || (4 < 5));      // True
+    print(',');
+    print((4 < 5) || (4 > 5));      // True
+    print(',');
+    print((4 > 5) || (4 > 5));      // False
+    print(',');
+    print(!(4 < 5));                // False
+    print(!(4 > 5));                // True
+
+
+    return 0;
+}

@@ -1,0 +1,34 @@
+/* The output on stdout should be repeating True,False,True,...,
+ */
+int main(int argc, char[][] argv) {
+
+    print(4 < 5);   // True
+    print(',');
+    print(5 < 4);   // False
+    print(',');
+    print(4 <= 5);  // True
+    print(',');
+    print(5 <= 4);  // False
+    print(',');
+    print(5 <= 5);  // True
+    print(',');
+    print(4 > 5);   // False
+    print(',');
+    print(5 > 4);   // True
+    print(',');
+    print(4 >= 5);  // False
+    print(',');
+    print(5 >= 4);  // True
+    print(',');
+    print(5 >= 5);  // False
+    print(',');
+    print(5 == 5);  // True
+    print(',');
+    print(4 == 5);  // False
+    print(',');
+    print(4 != 5);  // True
+    print(',');
+    print(5 != 5);  // False
+
+    return 0;
+}

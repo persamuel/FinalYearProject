@@ -1,0 +1,33 @@
+/* The output on stdout should be 12345678910
+ */
+int main(int argc, char[][] argv) {
+    int[5] stack;
+    int[] heap;
+    heap = new heap[5];
+
+    stack[0] = 1;
+    print(stack[0]);
+    stack[1] = 2;
+    print(stack[1]);
+    stack[2] = 3;
+    print(stack[2]);
+    stack[3] = 4;
+    print(stack[3]);
+    stack[4] = 5;
+    print(stack[4]);
+
+    heap[0] = 6;
+    print(heap[0]);
+    heap[1] = 7;
+    print(heap[1]);
+    heap[2] = 8;
+    print(heap[2]);
+    heap[3] = 9;
+    print(heap[3]);
+    heap[4] = 10;
+    print(heap[4]);
+
+    free heap;
+
+    return 0;
+}

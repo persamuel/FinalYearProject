@@ -1,0 +1,12 @@
+/* The output on stdout should be Y
+ */
+int main(int argc, char[][] argv) {
+
+    if (true) {
+        print('Y')
+    } else {
+        print('N')
+    }
+
+    return 0;
+}

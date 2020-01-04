@@ -1,0 +1,33 @@
+int quotient(int dividend, int divisor);
+int remainder(int dividend, int divisor);
+
+/* The output on stdout should be 6,1
+ */
+int main(int argc, char[][] argv) {
+    print(quotient(25, 4));
+    print(',');
+    print(remainder(25, 4));
+    return 0;
+}
+
+int remainder(int dividend, int divisor) {
+    int x;
+
+    x = quotient(dividend, divisor);
+
+    return dividend - (x * divisor);
+}
+
+int quotient(int dividend, int divisor) {
+    int i;
+    int x;
+
+    i = 0;
+    x = divisor;
+    while ((x + divisor) < dividend) {
+        x = x + divisor;
+        i = i + 1;
+    }
+
+    return i;
+}

@@ -1,5 +1,5 @@
 char[] concat(char[] s1, char[] s2);
-int strlen(char[] s);
+int stringlength(char[] s);
 
 /* The output on stdout should be the concatenation of the first two arguments
  */
@@ -20,8 +20,8 @@ char[] concat(char[] s1, char[] s2) {
     int m;
     int j;
 
-    n = strlen(s1);
-    m = strlen(s2);
+    n = stringlength(s1);
+    m = stringlength(s2);
 
     tmp = new char[n + m + 1];
 
@@ -45,11 +45,11 @@ char[] concat(char[] s1, char[] s2) {
     return tmp;
 }
 
-int strlen(char[] s) {
+int stringlength(char[] s) {
     int i;
 
     i = 0;
-    while (s[i] != 0) {
+    while (s[i] != '\0') {
         i = i + 1;
     }
 

@@ -1,0 +1,22 @@
+/* The output on stdout should be 65,B,66,D
+ */
+int main(int argc, char[][] argv) {
+    char c;
+    int x;
+
+    x = 'A';
+    print(x);
+    print(',');
+    c = 66;
+    print(c);
+    print(',');
+    x = c;
+    x = x + 1;
+    print(x);
+    print(',');
+    c = x;
+    c = c + 1;
+    print(c);
+
+    return 0;
+}

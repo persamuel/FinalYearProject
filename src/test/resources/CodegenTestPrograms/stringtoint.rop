@@ -1,0 +1,6 @@
+/* The output on stdout should be 13
+ */
+int main(int argc, char[][] argv) {
+    print(8 + 5);
+    return 0;
+}
