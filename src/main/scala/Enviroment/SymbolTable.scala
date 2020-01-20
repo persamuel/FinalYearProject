@@ -6,43 +6,42 @@ import Enviroment.SymbolCategory._
 import scala.collection.mutable.LinkedHashSet
 import scala.collection.mutable.Map
 
-class SymbolTable(val parent: Option[SymbolTable]) {
+class SymbolTable(val funcType: MyType) {
   private val table = Map.empty[String, Mapping]
 
   private val functions = LinkedHashSet.empty[String]
   private var paramOffset = 4
+
   private val parameters = LinkedHashSet.empty[String]
   private var localOffset = 0
+
   private val locals = LinkedHashSet.empty[String]
 
-  def add(name: String, typeof: MyType, category: SymbolCategory) = {
+  def add(name: String, theType: MyType, category: SymbolCategory) = {
     if (table.contains(name)) {
       throw RedefinitionException("Error: Redefinition of name \"" + name + "\" which is already in scope")
-    } else {
+    }
+    else {
       category match {
         case FUNCTION => {
           functions.add(name)
-          table.put(name, new Mapping(typeof, 0, Some(SymbolTable(Some(this)))))
+          table.put(name, new Mapping(theType, 0, Some(SymbolTable(theType))))
         }
         case PARAMETER => {
           parameters.add(name)
-
-          val tmp = paramOffset + typeof.getSizeInBytes
-          paramOffset = (tmp + (if (tmp < 0) 1 - 4 else 4 - 1)) / 4 * 4
-
-          table.put(name, new Mapping(typeof, paramOffset, None))
-        };
+          paramOffset = roundToNearestMultipleOfFour(paramOffset + theType.getSizeInBytes)
+          table.put(name, new Mapping(theType, paramOffset, None))
+        }
         case LOCAL => {
           locals.add(name)
-
-          val tmp = localOffset - typeof.getSizeInBytes
-          localOffset = (tmp + (if (tmp < 0) 1 - 4 else 4 - 1)) / 4 * 4
-
-          table.put(name, new Mapping(typeof, localOffset, None))
-        };
+          localOffset = roundToNearestMultipleOfFour(localOffset - theType.getSizeInBytes)
+          table.put(name, new Mapping(theType, localOffset, None))
+        }
       }
     }
   }
+
+  private def roundToNearestMultipleOfFour(x: Int) = (x + (if (x < 0) 1 - 4 else 4 - 1)) / 4 * 4
 
   def lookupMapping(name: String) = {
     table.get(name)
@@ -58,21 +57,7 @@ class SymbolTable(val parent: Option[SymbolTable]) {
     }
   }
 
-  def lookupMappingInParent(name: String) = {
-    parent match {
-      case Some(parent) => parent.lookupMapping(name)
-      case None => throw RootTableException("Error: Can not get parent of root symbol table.")
-    }
-  }
-
-  def lookupCategoryInParent(name: String) = {
-    parent match {
-      case Some(parent) => parent.lookupCategory(name)
-      case None => throw RootTableException("Error: Can not get parent of root symbol table.")
-    }
-  }
-
-  def roomNeeded(): Int = localOffset
+  def frameSize(): Int = localOffset
 
   def keys(category: SymbolCategory) = {
     category match {
@@ -92,5 +77,5 @@ class SymbolTable(val parent: Option[SymbolTable]) {
 }
 
 object SymbolTable {
-  def apply(parent: Option[SymbolTable]): SymbolTable = new SymbolTable(parent)
+  def apply(funcType: MyType): SymbolTable = new SymbolTable(funcType)
 }

@@ -15,7 +15,7 @@ object Compiler extends App {
   val ast = parser.parse.value.asInstanceOf[Program]
 
   val typechecker = new TypeCheckVisitor()
-  val codegenerator = new CodegenVisitor(typechecker.rootTable)
+  val codegenerator = new CodegenVisitor(typechecker.rootEnv)
 
   ast.accept(typechecker)
   ast.accept(codegenerator)

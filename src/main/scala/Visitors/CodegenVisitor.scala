@@ -122,7 +122,7 @@ class CodegenVisitor(private val rootTable: SymbolTable) extends Analysis.NodeVi
   }
 
   override def postVisit(node: Expression.Identifier): Unit = {
-    val offset = currentFunctionEnv.lookupMapping(node.getName).get.offset
+    val offset = currentFunctionEnv.lookupMapping(node.getName).get.frameOffset
 
     if (node.getAttachedType.isInstanceOf[CharStackArray_T] || node.getAttachedType.isInstanceOf[IntStackArray_T])
       node.setAttachedAssembly(builder.buildLoadEff(s"$offset(%ebp)"))
@@ -163,7 +163,7 @@ class CodegenVisitor(private val rootTable: SymbolTable) extends Analysis.NodeVi
     s"$label:\n" ++
     "pushl %ebp\n" ++ // Save the old base pointer
     "movl %esp,%ebp\n" ++ // Make the stack pointer the base pointer
-    s"subl $$${Math.abs(currentFunctionEnv.roomNeeded)},%esp\n" ++ // Allocate room needed for local storage
+    s"subl $$${Math.abs(currentFunctionEnv.frameSize)},%esp\n" ++ // Allocate room needed for local storage
     node.getBody.getAttachedAssembly ++
     "movl %ebp,%esp\n" ++ // Restore the stack pointer
     "popl %ebp\n" ++ // Restore the base pointer
@@ -172,14 +172,14 @@ class CodegenVisitor(private val rootTable: SymbolTable) extends Analysis.NodeVi
     node.setAttachedAssembly(tmp)
 
     // go back up to higher scope
-    currentFunctionEnv = currentFunctionEnv.parent.get
+    currentFunctionEnv = rootTable
   }
 
   override def postVisit(node: FunctionSignature): Unit = {
     // go into scope if it is passed the main function
     if (!declFlag) {
       currentFunctionName = node.getName
-      currentFunctionEnv = currentFunctionEnv.lookupMapping(node.getName).get.enviroment.get
+      currentFunctionEnv = currentFunctionEnv.lookupMapping(node.getName).get.env.get
     }
   }
 
@@ -188,7 +188,7 @@ class CodegenVisitor(private val rootTable: SymbolTable) extends Analysis.NodeVi
     declFlag = false
 
     currentFunctionName = "main"
-    currentFunctionEnv = currentFunctionEnv.lookupMapping("main").get.enviroment.get
+    currentFunctionEnv = currentFunctionEnv.lookupMapping("main").get.env.get
 
     true
   }
@@ -202,7 +202,7 @@ class CodegenVisitor(private val rootTable: SymbolTable) extends Analysis.NodeVi
 
     node.setAttachedAssembly(tmp)
 
-    currentFunctionEnv = currentFunctionEnv.parent.get
+    currentFunctionEnv = rootTable
   }
 
   override def postVisit(node: Parameter): Unit = {
@@ -279,7 +279,7 @@ class CodegenVisitor(private val rootTable: SymbolTable) extends Analysis.NodeVi
     val mapping = currentFunctionEnv.lookupMapping(node.getName).get
 
     val tmp = node.getVal.getAttachedAssembly ++
-    builder.buildStore(s"${mapping.offset}(%ebp)")
+    builder.buildStore(s"${mapping.frameOffset}(%ebp)")
 
     node.setAttachedAssembly(tmp)
   }
@@ -287,10 +287,10 @@ class CodegenVisitor(private val rootTable: SymbolTable) extends Analysis.NodeVi
   override def postVisit(node: Statement.ArrayAssign): Unit = {
     val mapping = currentFunctionEnv.lookupMapping(node.getName).get
 
-    if (mapping.typeof.isInstanceOf[CharStackArray_T]) { // todo: Change movl to movb when working with char arrays
+    if (mapping.theType.isInstanceOf[CharStackArray_T]) { // todo: Change movl to movb when working with char arrays
       val tmp = node.getIdx.getAttachedAssembly ++ // Compute the index
       builder.buildPush ++ // Push the index to the stack
-      builder.buildLoadEff(s"${mapping.offset}(%ebp)") // Load the address of the start of the array
+      builder.buildLoadEff(s"${mapping.frameOffset}(%ebp)") // Load the address of the start of the array
       builder.buildPlus ++ // Add the index on the ToS to the array start
       builder.buildPush ++ // Push the address computed onto the stack
       node.getVal.getAttachedAssembly ++ // Compute the value
@@ -299,10 +299,10 @@ class CodegenVisitor(private val rootTable: SymbolTable) extends Analysis.NodeVi
 
       node.setAttachedAssembly(tmp)
     }
-    else if (mapping.typeof.isInstanceOf[CharHeapArray_T]) {
+    else if (mapping.theType.isInstanceOf[CharHeapArray_T]) {
       val tmp = node.getIdx.getAttachedAssembly ++ // Compute the index
       builder.buildPush ++ // Push the index to the stack
-      builder.buildLoad(s"${mapping.offset}(%ebp)") // Load the address of the start of the array
+      builder.buildLoad(s"${mapping.frameOffset}(%ebp)") // Load the address of the start of the array
       builder.buildPlus ++ // Add the index on the ToS to the array start
       builder.buildPush ++ // Push the address computed onto the stack
       node.getVal.getAttachedAssembly ++ // Compute the value
@@ -311,13 +311,13 @@ class CodegenVisitor(private val rootTable: SymbolTable) extends Analysis.NodeVi
 
       node.setAttachedAssembly(tmp)
     }
-    else if (mapping.typeof.isInstanceOf[IntStackArray_T]) {
+    else if (mapping.theType.isInstanceOf[IntStackArray_T]) {
       val tmp = node.getIdx.getAttachedAssembly ++ // Compute the index
       builder.buildPush ++ // Push the index to the stack
       builder.buildLoadImm("4") ++
       builder.buildMulti ++
       builder.buildPush ++
-      builder.buildLoadEff(s"${mapping.offset}(%ebp)") // Load the address of the start of the array
+      builder.buildLoadEff(s"${mapping.frameOffset}(%ebp)") // Load the address of the start of the array
       builder.buildPlus ++ // Add the index on the ToS to the array start
       builder.buildPush ++ // Push the address computed onto the stack
       node.getVal.getAttachedAssembly ++ // Compute the value
@@ -326,13 +326,13 @@ class CodegenVisitor(private val rootTable: SymbolTable) extends Analysis.NodeVi
 
       node.setAttachedAssembly(tmp)
     }
-    else if (mapping.typeof.isInstanceOf[IntHeapArray_T]) {
+    else if (mapping.theType.isInstanceOf[IntHeapArray_T]) {
       val tmp = node.getIdx.getAttachedAssembly ++ // Compute the index
       builder.buildPush ++ // Push the index to the stack
       builder.buildLoadImm("4") ++
       builder.buildMulti ++
       builder.buildPush ++
-      builder.buildLoad(s"${mapping.offset}(%ebp)") // Load the address of the start of the array
+      builder.buildLoad(s"${mapping.frameOffset}(%ebp)") // Load the address of the start of the array
       builder.buildPlus ++ // Add the index on the ToS to the array start
       builder.buildPush ++ // Push the address computed onto the stack
       node.getVal.getAttachedAssembly ++ // Compute the value
@@ -347,10 +347,10 @@ class CodegenVisitor(private val rootTable: SymbolTable) extends Analysis.NodeVi
     val mapping = currentFunctionEnv.lookupMapping(node.getName).get
 
     val tmp =
-    (if (mapping.typeof.isInstanceOf[CharStackArray_T] || mapping.typeof.isInstanceOf[IntStackArray_T])
-      builder.buildLoadEff(s"${mapping.offset}(%ebp)")
+    (if (mapping.theType.isInstanceOf[CharStackArray_T] || mapping.theType.isInstanceOf[IntStackArray_T])
+      builder.buildLoadEff(s"${mapping.frameOffset}(%ebp)")
     else
-      builder.buildLoad(s"${mapping.offset}(%ebp)")) ++
+      builder.buildLoad(s"${mapping.frameOffset}(%ebp)")) ++
     "call _free\n" ++ // call the free function
     "incl %esp\n" // cleanup the parameter on the stack
 
