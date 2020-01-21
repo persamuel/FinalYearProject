@@ -20,7 +20,7 @@ int main(int argc, char[][] argv) {
     print(',');
     print(2 + 3 >= 2 + 2);  // True
     print(',');
-    print(2 + 3 >= 2 + 3);  // False
+    print(2 + 2 >= 2 + 3);  // False
     print(',');
     print(2 + 3 == 2 + 3);  // True
     print(',');

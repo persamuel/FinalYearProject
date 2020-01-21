@@ -64,6 +64,13 @@ class Accumulatorx86CommandBuilder {
     s"movl %eax,$loc\n"
   }
 
+  /**
+   * Compares the accumulator with the top of the stack, stores true in the accumulator if it's bigger than the top of
+   * the stack otherwise stores false there. Also cleans up the stack.
+   *
+   * LHS of the expression should be in the accumulator.
+   * RHS of the expression should be on the top of the stack.
+   */
   def buildCompGT(): String = {
     buildComp("jg")
   }
@@ -91,38 +98,53 @@ class Accumulatorx86CommandBuilder {
   private def buildComp(op: String): String = {
     val truepath = newLabel()
     val cleanup = newLabel()
-    // todo: Check the ordering of this instruction
-    "cmpl (%esp),%eax\n" + // Compare the accumulator and the top of the stack
-    s"$op $truepath\n" + // Jump based on the operator chosen
-    "movb $0,%eax\n" + // Put false in the accumulator if comparison didn't succeed
-    s"jmp $cleanup\n" +
-    s"$truepath:\n" +
-    "movb $255,%eax\n" + // Put true in the accumulator if comparison succeeded
-    s"$cleanup:\n" +
-    "incl %esp\n" // Cleanup the stack
+
+    "cmp %eax,(%esp)\n" ++  // Compare the accumulator and the top of the stack
+    s"$op $truepath\n" ++   // Jump based on the operator chosen
+    "movb $0x00,%eax\n" ++  // Put false in the accumulator if comparison didn't succeed
+    s"jmp $cleanup\n" ++
+    s"$truepath:\n" ++
+    "movb $0xff,%eax\n" ++  // Put true in the accumulator if comparison succeeded
+    s"$cleanup:\n" ++
+    "incl %esp\n"           // Cleanup the stack
   }
 
+  /**
+   * Jumps to location.
+   */
   def buildJump(loc: String): String = {
     s"jmp $loc\n"
   }
 
+  /**
+   * Jumps to location if accumulator holds true.
+   */
   def buildJumpTrue(loc: String): String = {
-    "cmpb $255,%eax\n" +
-    s"je $loc\n"
+    "cmpb $0xff,%eax\n" ++    // Compares true (255) with the content of the accumulator
+    s"je $loc\n"              // Jumps to location
   }
 
+  /**
+   * Pops the value from the top of the stack and adds it to the accumulator, storing the result in the accumulator.
+   */
   def buildPlus(): String = {
-    "addl (%esp),%eax\n" +
+    "addl (%esp),%eax\n" ++
     "incl %esp\n"
   }
 
+  /**
+   * Pops the value from the top of the stack and multiplies the accumulator by it, storing the result in the accumulator.
+   */
   def buildMulti(): String = {
-    "imull (%esp),%eax\n" +
+    "imull (%esp),%eax\n" ++
     "incl %esp\n"
   }
 
+  /**
+   * Pops the value from the top of the stack and subtracts it from the accumulator, storing the result in the accumulator.
+   */
   def buildMinus(): String = {
-    "subl (%esp),%eax\n" +
+    "subl (%esp),%eax\n" ++ // Subtracts the first operand from the second
     "incl %esp\n"
   }
 
@@ -130,16 +152,25 @@ class Accumulatorx86CommandBuilder {
     ""
   }*/
 
+  /**
+   * Performs logical AND between the top of the stack and the accumulator, storing the result in the accumulator.
+   */
   def buildAnd(): String = {
-    "andl (%esp),%eax\n" +
+    "andl (%esp),%eax\n" ++
     "incl %esp\n"
   }
 
+  /**
+   * Performs logical OR between the top of the stack and the accumulator, storing the result in the accumulator.
+   */
   def buildOr(): String = {
-    "orl (%esp),%eax\n" +
+    "orl (%esp),%eax\n" ++
     "incl %esp\n"
   }
 
+  /**
+   * Negates what's in the accumulator.
+   */
   def buildNegate(): String = {
     "negl %eax"
   }

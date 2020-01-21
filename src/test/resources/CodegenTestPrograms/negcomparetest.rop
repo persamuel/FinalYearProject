@@ -1,0 +1,43 @@
+/* The output on stdout should be repeating True,False,True,...,
+ */
+int main(int argc, char[][] argv) {
+    int x;
+    int y;
+    int z;
+
+    x = 0 - 1;
+    z = x;
+    y = 0 - 2;
+
+    print(x < 0);   // True
+    print(',');
+    print(x < y);   // False
+    print(',');
+    print(x <= 0);  // True
+    print(',');
+    print(x <= y);  // False
+    print(',');
+    print(x <= z);  // True
+    print(',');
+    print(x > 0);   // False
+    print(',');
+    print(x > y);   // True
+    print(',');
+    print(x >= 0);  // False
+    print(',');
+    print(x >= y);  // True
+    print(',');
+    print(y >= x);  // False
+    print(',');
+    print(x == z);  // True
+    print(',');
+    print(x == y);  // False
+    print(',');
+    print(x != y);  // True
+    print(',');
+    print(x != z);  // False
+
+    print('\n');
+
+    return 0;
+}
