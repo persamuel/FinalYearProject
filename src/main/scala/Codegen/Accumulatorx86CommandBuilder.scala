@@ -8,34 +8,58 @@ class Accumulatorx86CommandBuilder {
     s"l$lcount"
   }
 
+  /**
+   * Does nothing
+   */
   def buildNop(): String = {
     "nop\n"
   }
 
+  /**
+   * Pops the top of the stack into the accumulator
+   */
   def buildPop(): String = {
     "popl %eax\n"
   }
 
+  /**
+   * Pushes the value in the accumulator onto the stack
+   */
   def buildPush(): String = {
     "pushl %eax\n"
   }
 
+  /**
+   * Loads a word from the provided location into the accumulator
+   */
   def buildLoad(loc: String): String = {
     s"movl $loc,%eax\n"
   }
 
+  /**
+   * Loads a byte from the provided location into the accumulator
+   */
   def buildLoadByte(loc: String): String = {
     s"movb $loc,%eax\n"
   }
 
+  /**
+   * Loads the memory address of the provided location into the accumulator
+   */
   def buildLoadEff(loc: String): String = {
     s"leal $loc,%eax\n"
   }
 
+  /**
+   * Loads an immediate value (constant) into the accumulator
+   */
   def buildLoadImm(value: String): String = {
     s"movl $$$value,%eax\n"
   }
 
+  /**
+   * Stores what's in the accumulator at the location provided
+   */
   def buildStore(loc: String): String = {
     s"movl %eax,$loc\n"
   }

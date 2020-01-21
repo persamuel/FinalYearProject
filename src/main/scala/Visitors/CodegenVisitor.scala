@@ -7,14 +7,15 @@ import Node._
 import Parser.sym
 import collection.JavaConverters._
 
-class CodegenVisitor(private val rootTable: SymbolTable) extends Analysis.NodeVisitor {
+class CodegenVisitor(private val rootEnv: SymbolTable) extends Analysis.NodeVisitor {
+
   private var declFlag = true
-  private var currentFunctionName = ""
-  private var currentFunctionEnv = rootTable
+
+  private var currentEnv = rootEnv
   private val builder = new Accumulatorx86CommandBuilder
 
   override def postVisit(node: Expression.Logical): Unit = {
-    val tmp = node.getRhs.getAttachedAssembly ++
+    val code = node.getRhs.getAttachedAssembly ++
     builder.buildPush() ++
     node.getLhs.getAttachedAssembly ++
     (node.getOp match {
@@ -22,7 +23,7 @@ class CodegenVisitor(private val rootTable: SymbolTable) extends Analysis.NodeVi
       case sym.OR => builder.buildOr()
     })
 
-    node.setAttachedAssembly(tmp)
+    node.setAttachedAssembly(code)
   }
 
   override def postVisit(node: Expression.Equality): Unit = {
@@ -172,7 +173,7 @@ class CodegenVisitor(private val rootTable: SymbolTable) extends Analysis.NodeVi
     node.setAttachedAssembly(tmp)
 
     // go back up to higher scope
-    currentFunctionEnv = rootTable
+    currentFunctionEnv = rootEnv
   }
 
   override def postVisit(node: FunctionSignature): Unit = {
@@ -202,7 +203,7 @@ class CodegenVisitor(private val rootTable: SymbolTable) extends Analysis.NodeVi
 
     node.setAttachedAssembly(tmp)
 
-    currentFunctionEnv = rootTable
+    currentFunctionEnv = rootEnv
   }
 
   override def postVisit(node: Parameter): Unit = {

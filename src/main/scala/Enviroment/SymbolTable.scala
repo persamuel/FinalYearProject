@@ -6,7 +6,7 @@ import Enviroment.SymbolCategory._
 import scala.collection.mutable.LinkedHashSet
 import scala.collection.mutable.Map
 
-class SymbolTable(val funcType: MyType) {
+class SymbolTable(val funcType: MyType, val funcName: String) {
   private val table = Map.empty[String, Mapping]
 
   private val functions = LinkedHashSet.empty[String]
@@ -25,7 +25,7 @@ class SymbolTable(val funcType: MyType) {
       category match {
         case FUNCTION => {
           functions.add(name)
-          table.put(name, new Mapping(theType, 0, Some(SymbolTable(theType))))
+          table.put(name, new Mapping(theType, 0, Some(SymbolTable(theType, name))))
         }
         case PARAMETER => {
           parameters.add(name)
@@ -77,5 +77,5 @@ class SymbolTable(val funcType: MyType) {
 }
 
 object SymbolTable {
-  def apply(funcType: MyType): SymbolTable = new SymbolTable(funcType)
+  def apply(funcType: MyType, funcName: String): SymbolTable = new SymbolTable(funcType, funcName)
 }
