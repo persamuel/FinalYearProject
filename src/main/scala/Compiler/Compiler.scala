@@ -8,7 +8,7 @@ import Visitors.{CodegenVisitor, TypeCheckVisitor}
 import java_cup.runtime.Scanner
 
 object Compiler extends App {
-  val scanner = new Lexer(new FileReader("src/main/resources/Example/Programs/factorial.rop"))
+  val scanner = new Lexer(new FileReader("src/test/resources/CodegenTestPrograms/comparetest2.rop"))
 
   val parser = new Parser(scanner)
 

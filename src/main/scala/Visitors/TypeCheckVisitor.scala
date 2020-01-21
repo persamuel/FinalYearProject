@@ -11,7 +11,7 @@ import scala.collection.mutable.LinkedHashSet
 import collection.JavaConverters._
 
 class TypeCheckVisitor extends NodeVisitor {
-  val rootEnv: SymbolTable = SymbolTable(new Unit_T)
+  val rootEnv: SymbolTable = SymbolTable(new Unit_T, "")
   private var currentEnv: SymbolTable = rootEnv
 
   private val decls = LinkedHashSet.empty[String]

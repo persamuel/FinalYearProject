@@ -31,7 +31,7 @@ class CodegenVisitor(private val rootEnv: SymbolTable) extends Analysis.NodeVisi
     builder.buildPush() ++
     node.getLhs.getAttachedAssembly ++
     (node.getOp match {
-      case sym.EQ => builder.buildCompEQ()
+      case sym.EQEQ => builder.buildCompEQ()
       case sym.NOTEQ => builder.buildCompNEQ()
     })
 
@@ -84,7 +84,7 @@ class CodegenVisitor(private val rootEnv: SymbolTable) extends Analysis.NodeVisi
           builder.buildLoad("(%eax)")                 // Load a word (int) from the address in the accumulator
         }
       }) ++
-      "incl %esp\n"                                         // Cleanup the stack
+      "addl $4,%esp\n"                                         // Cleanup the stack
 
     node.setAttachedAssembly(tmp)
   }
@@ -114,9 +114,9 @@ class CodegenVisitor(private val rootEnv: SymbolTable) extends Analysis.NodeVisi
 
   override def postVisit(node: Expression.BoolLiteral): Unit = {
     if (node.getVal)
-      node.setAttachedAssembly(builder.buildLoadImm("0xff"))
+      node.setAttachedAssembly(builder.buildLoadImm("255"))
     else
-      node.setAttachedAssembly(builder.buildLoadImm("0x00"))
+      node.setAttachedAssembly(builder.buildLoadImm("0"))
   }
 
   override def postVisit(node: Expression.Identifier): Unit = {
@@ -135,7 +135,7 @@ class CodegenVisitor(private val rootEnv: SymbolTable) extends Analysis.NodeVisi
     (if (node.getTypeConst == sym.INT) "imull $4,%eax\n" else "") ++  // Multiply byte size by 4 to adjust for integers
     builder.buildPush() ++
     "call _malloc\n" ++
-    "incl %esp\n"
+    "addl $4,%esp\n"
 
     node.setAttachedAssembly(tmp)
   }
@@ -295,7 +295,7 @@ class CodegenVisitor(private val rootEnv: SymbolTable) extends Analysis.NodeVisi
     builder.buildPush() ++
     node.getVal.getAttachedAssembly ++ // Compute the value
     builder.buildStore("(%esp)") ++ // Store the value at the address computed
-    "incl %esp\n"
+    "addl $4,%esp\n"
 
     node.setAttachedAssembly(tmp)
   }
@@ -309,13 +309,13 @@ class CodegenVisitor(private val rootEnv: SymbolTable) extends Analysis.NodeVisi
         case _ =>                                         builder.buildLoad(s"${mapping.frameOffset}(%ebp)")
       }) ++
     "call _free\n" ++     // Call the free function
-    "incl %esp\n"         // Cleanup the parameter on the stack
+    "addl $4,%esp\n"         // Cleanup the parameter on the stack
 
     node.setAttachedAssembly(tmp)
   }
 
   override def postVisit(node: Statement.Print): Unit = {
-    val tmp = 
+    val tmp =
     (if (node.getVal.getAttachedType.isInstanceOf[Bool_T])
       printBool(node)
     else
@@ -332,11 +332,11 @@ class CodegenVisitor(private val rootEnv: SymbolTable) extends Analysis.NodeVisi
     builder.buildJumpTrue(tlabel) ++
     "pushl $print_false\n" ++
     builder.buildJump(endlabel) ++
-    s"$tlabel:" ++
+    s"$tlabel:\n" ++
     "pushl $print_true\n" ++
-    s"$endlabel:" ++
+    s"$endlabel:\n" ++
     "call printf\n" ++
-    "incl %esp\n"
+    "addl $4,%esp\n"
   }
 
   private def printOther(node: Statement.Print): String = {

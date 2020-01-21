@@ -1,0 +1,6 @@
+int main(int argc, char[][] argv) {
+    print(2 + 3 < 2 + 2);   // False
+    print('\n');
+
+    return 0;
+}

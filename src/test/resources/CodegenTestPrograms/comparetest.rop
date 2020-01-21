@@ -20,7 +20,7 @@ int main(int argc, char[][] argv) {
     print(',');
     print(5 >= 4);  // True
     print(',');
-    print(5 >= 5);  // False
+    print(4 >= 5);  // False
     print(',');
     print(5 == 5);  // True
     print(',');
@@ -29,6 +29,8 @@ int main(int argc, char[][] argv) {
     print(4 != 5);  // True
     print(',');
     print(5 != 5);  // False
+
+    print('\n');
 
     return 0;
 }

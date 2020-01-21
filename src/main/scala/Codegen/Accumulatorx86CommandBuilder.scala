@@ -84,7 +84,7 @@ class Accumulatorx86CommandBuilder {
   }
 
   def buildCompLTE(): String = {
-    buildComp("jlt")
+    buildComp("jle")
   }
 
   def buildCompEQ(): String = {
@@ -99,14 +99,14 @@ class Accumulatorx86CommandBuilder {
     val truepath = newLabel()
     val cleanup = newLabel()
 
-    "cmp %eax,(%esp)\n" ++  // Compare the accumulator and the top of the stack
+    "cmp (%esp),%eax\n" ++  // Compare the accumulator and the top of the stack
     s"$op $truepath\n" ++   // Jump based on the operator chosen
-    "movb $0x00,%eax\n" ++  // Put false in the accumulator if comparison didn't succeed
+    "movb $0,%eax\n" ++     // Put false in the accumulator if comparison didn't succeed
     s"jmp $cleanup\n" ++
     s"$truepath:\n" ++
-    "movb $0xff,%eax\n" ++  // Put true in the accumulator if comparison succeeded
+    "movb $255,%eax\n" ++   // Put true in the accumulator if comparison succeeded
     s"$cleanup:\n" ++
-    "incl %esp\n"           // Cleanup the stack
+    "addl $4,%esp\n"        // Cleanup the stack
   }
 
   /**
@@ -120,7 +120,7 @@ class Accumulatorx86CommandBuilder {
    * Jumps to location if accumulator holds true.
    */
   def buildJumpTrue(loc: String): String = {
-    "cmpb $0xff,%eax\n" ++    // Compares true (255) with the content of the accumulator
+    "cmpb $255,%eax\n" ++     // Compares true with the content of the accumulator
     s"je $loc\n"              // Jumps to location
   }
 
@@ -129,7 +129,7 @@ class Accumulatorx86CommandBuilder {
    */
   def buildPlus(): String = {
     "addl (%esp),%eax\n" ++
-    "incl %esp\n"
+    "addl $4,%esp\n"
   }
 
   /**
@@ -137,7 +137,7 @@ class Accumulatorx86CommandBuilder {
    */
   def buildMulti(): String = {
     "imull (%esp),%eax\n" ++
-    "incl %esp\n"
+    "addl $4,%esp\n"
   }
 
   /**
@@ -145,7 +145,7 @@ class Accumulatorx86CommandBuilder {
    */
   def buildMinus(): String = {
     "subl (%esp),%eax\n" ++ // Subtracts the first operand from the second
-    "incl %esp\n"
+    "addl $4,%esp\n"
   }
 
   /*def buildDIVIDE(): String = {
@@ -157,7 +157,7 @@ class Accumulatorx86CommandBuilder {
    */
   def buildAnd(): String = {
     "andl (%esp),%eax\n" ++
-    "incl %esp\n"
+    "addl $4,%esp\n"
   }
 
   /**
@@ -165,7 +165,7 @@ class Accumulatorx86CommandBuilder {
    */
   def buildOr(): String = {
     "orl (%esp),%eax\n" ++
-    "incl %esp\n"
+    "addl $4,%esp\n"
   }
 
   /**

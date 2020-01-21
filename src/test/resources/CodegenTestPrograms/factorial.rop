@@ -4,6 +4,7 @@ int factorial(int n);
  */
 int main(int argc, char[][] argv) {
     print(factorial(5));
+    print('\n');
     return 0;
 }
 
