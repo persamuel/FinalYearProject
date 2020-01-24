@@ -10,11 +10,11 @@ class SymbolTable(val funcType: MyType, val funcName: String) {
   private val table = Map.empty[String, Mapping]
 
   private val functions = LinkedHashSet.empty[String]
-  private var paramOffset = 4
 
+  var paramOffset = 4
   private val parameters = LinkedHashSet.empty[String]
-  private var localOffset = 0
 
+  var localOffset = 0
   private val locals = LinkedHashSet.empty[String]
 
   def add(name: String, theType: MyType, category: SymbolCategory) = {

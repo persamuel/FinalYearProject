@@ -1,6 +1,16 @@
 int main(int argc, char[][] argv) {
-    print(2 + 3 < 2 + 2);   // False
+    char[] tmp;
+
+    tmp = new char[3];
+
+    tmp[0] = 'h';
+    tmp[1] = 'i';
+    tmp[2] = '\0';
+
+    print(tmp);
     print('\n');
+
+    free tmp;
 
     return 0;
 }

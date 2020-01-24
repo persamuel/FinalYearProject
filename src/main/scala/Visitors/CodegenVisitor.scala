@@ -134,7 +134,7 @@ class CodegenVisitor(private val rootEnv: SymbolTable) extends Analysis.NodeVisi
     val tmp = node.getLength.getAttachedAssembly ++
     (if (node.getTypeConst == sym.INT) "imull $4,%eax\n" else "") ++  // Multiply byte size by 4 to adjust for integers
     builder.buildPush() ++
-    "call _malloc\n" ++
+    "call malloc\n" ++
     "addl $4,%esp\n"
 
     node.setAttachedAssembly(tmp)
@@ -188,6 +188,8 @@ class CodegenVisitor(private val rootEnv: SymbolTable) extends Analysis.NodeVisi
   override def postVisit(node: MainFunction): Unit = {
     val tmp = ".globl _start\n" ++
     "_start:\n" ++
+    "movl %esp, %ebp\n" ++                  // bp will point to argc since there's no old bp or ra to save
+    s"subl $$${Math.abs(currentEnv.frameSize)},%esp\n" ++   // Allocate room needed for local storage
     node.getBody.getAttachedAssembly ++
     builder.buildPush() ++                // Push our exit status on the stack
     "call exit\n"                         // Call the function to exit
@@ -282,20 +284,24 @@ class CodegenVisitor(private val rootEnv: SymbolTable) extends Analysis.NodeVisi
     val arrayType = mapping.theType
 
     val tmp = node.getIdx.getAttachedAssembly ++
+    (arrayType match {
+      case _: IntHeapArray_T | _: IntStackArray_T => "imull $4,%eax\n"
+      case _ => ""
+    }) ++
+    builder.buildPush ++ // Push the index onto the top of the stack
+    (arrayType match {
+      case _: CharStackArray_T | _: IntStackArray_T =>  builder.buildLoadEff(s"$offset(%ebp)") // Load the address of the start of the array in the acc
+      case _ =>                                         builder.buildLoad(s"$offset(%ebp)")
+    }) ++
+    builder.buildPlus ++                              // Add the index to the array address
+    "pushl %ebx\n" ++
+    "movl %eax,%ebx\n" ++
+    node.getVal.getAttachedAssembly ++
       (arrayType match {
-        case _: IntHeapArray_T | _: IntStackArray_T => "imull $4,%eax\n"
-        case _ => ""
+        case _: CharHeapArray_T | _: CharStackArray_T =>  "movb %eax,(%ebx)\n"
+        case _ =>                                         "movl %eax,(%ebx)\n"
       }) ++
-    builder.buildPush() ++
-      (arrayType match {
-        case _: IntStackArray_T | _: CharStackArray_T =>  builder.buildLoadEff(s"$offset(%ebp)")
-        case _ =>                                         builder.buildLoad(s"$offset(%ebp)")
-      }) ++
-    builder.buildPlus() ++
-    builder.buildPush() ++
-    node.getVal.getAttachedAssembly ++ // Compute the value
-    builder.buildStore("(%esp)") ++ // Store the value at the address computed
-    "addl $4,%esp\n"
+    "popl %ebx\n"
 
     node.setAttachedAssembly(tmp)
   }
@@ -308,7 +314,7 @@ class CodegenVisitor(private val rootEnv: SymbolTable) extends Analysis.NodeVisi
         case _: CharStackArray_T | _: IntStackArray_T =>  builder.buildLoadEff(s"${mapping.frameOffset}(%ebp)")
         case _ =>                                         builder.buildLoad(s"${mapping.frameOffset}(%ebp)")
       }) ++
-    "call _free\n" ++     // Call the free function
+    "call free\n" ++     // Call the free function
     "addl $4,%esp\n"         // Cleanup the parameter on the stack
 
     node.setAttachedAssembly(tmp)

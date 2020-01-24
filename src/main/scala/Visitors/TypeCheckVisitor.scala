@@ -239,6 +239,15 @@ class TypeCheckVisitor extends NodeVisitor {
     rootEnv.add("main", new Int_T, FUNCTION)
 
     currentEnv = rootEnv.lookupMapping("main").get.env.get
+
+    // Adjust offsets for main function
+    // First local is -4 from %ebp
+    // Argc is 0 from %ebp
+    // Argv[0] is +4 from %ebp
+    // ...
+    currentEnv.paramOffset = -4
+    currentEnv.localOffset = 0
+
     currentEnv.add(node.getArgc, new Int_T, PARAMETER)
     currentEnv.add(node.getArgv, new StringArray_T, PARAMETER)
 
