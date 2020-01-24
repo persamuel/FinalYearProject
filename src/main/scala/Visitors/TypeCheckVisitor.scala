@@ -73,7 +73,7 @@ class TypeCheckVisitor extends NodeVisitor {
     node.getName.getAttachedType match {
       case _: CharStackArray_T | _: CharHeapArray_T => node.setAttachedType(new Char_T)
       case _: IntStackArray_T | _: IntHeapArray_T   => node.setAttachedType(new Int_T)
-      case _: StringArray_T                         => node.setAttachedType(new CharHeapArray_T)
+      case _: StringArray_T                         => node.setAttachedType(new CharHeapArray_T) // todo: Check usage of StringArray_T
       case _                                        => throw TypeCheckingException(s"Error: Identifier ${node.getName.toString} in ${node.toString} is not an array type.")
     }
   }
@@ -356,7 +356,7 @@ class TypeCheckVisitor extends NodeVisitor {
       case (_: CharStackArray_T, _: Int_T) | (_: CharHeapArray_T, _: Int_T)   => node.setAttachedType(new Unit_T)
       case (_: IntStackArray_T, _: Int_T) | (_: IntHeapArray_T, _: Int_T)     => node.setAttachedType(new Unit_T)
       case (_: IntStackArray_T, _: Char_T) | (_: IntHeapArray_T, _: Char_T)   => node.setAttachedType(new Unit_T)
-      case (_: StringArray_T, _: CharHeapArray_T)                             => node.setAttachedType(new Unit_T)
+      case (_: StringArray_T, _: CharHeapArray_T)                             => node.setAttachedType(new Unit_T) // todo: Check usage of StringArray_T
       case _                                                                  => throw TypeCheckingException(s"Error: Types do not match in assignment ${node.toString}.")
     }
   }

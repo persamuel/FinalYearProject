@@ -76,15 +76,14 @@ class CodegenVisitor(private val rootEnv: SymbolTable) extends Analysis.NodeVisi
           builder.buildPlus ++                              // Add the index to the array address
           builder.buildLoadByte("(%eax)")             // Load a byte from the address in the accumulator
         }
-        case _: IntHeapArray_T | _: IntStackArray_T => {
+        case _: IntHeapArray_T | _: IntStackArray_T | _: StringArray_T => { // todo: Check usage of StringArray_T
           "imull $4,%eax\n" ++                              // Multiply the index by 4 to adjust for integer size
           builder.buildPush ++
           node.getName.getAttachedAssembly ++
           builder.buildPlus ++
           builder.buildLoad("(%eax)")                 // Load a word (int) from the address in the accumulator
         }
-      }) ++
-      "addl $4,%esp\n"                                         // Cleanup the stack
+      })
 
     node.setAttachedAssembly(tmp)
   }
@@ -123,7 +122,7 @@ class CodegenVisitor(private val rootEnv: SymbolTable) extends Analysis.NodeVisi
     val offset = currentEnv.lookupMapping(node.getName).get.frameOffset
 
     node.getAttachedType match {
-      case _: CharStackArray_T | _: IntStackArray_T =>  // Have to load the address, not the first value
+      case _: CharStackArray_T | _: IntStackArray_T | _: StringArray_T =>  // Have to load the address, not the first value
         node.setAttachedAssembly(builder.buildLoadEff(s"$offset(%ebp)"))
       case _ =>
         node.setAttachedAssembly(builder.buildLoad(s"$offset(%ebp)"))
@@ -285,13 +284,13 @@ class CodegenVisitor(private val rootEnv: SymbolTable) extends Analysis.NodeVisi
 
     val tmp = node.getIdx.getAttachedAssembly ++
     (arrayType match {
-      case _: IntHeapArray_T | _: IntStackArray_T => "imull $4,%eax\n"
+      case _: IntHeapArray_T | _: IntStackArray_T | _: StringArray_T => "imull $4,%eax\n"
       case _ => ""
     }) ++
     builder.buildPush ++ // Push the index onto the top of the stack
-    (arrayType match {
-      case _: CharStackArray_T | _: IntStackArray_T =>  builder.buildLoadEff(s"$offset(%ebp)") // Load the address of the start of the array in the acc
-      case _ =>                                         builder.buildLoad(s"$offset(%ebp)")
+    (arrayType match { // todo: Check usage of StringArray_T
+      case _: CharStackArray_T | _: IntStackArray_T | _: StringArray_T => builder.buildLoadEff(s"$offset(%ebp)") // Load the address of the start of the array in the acc
+      case _ =>                                                           builder.buildLoad(s"$offset(%ebp)")
     }) ++
     builder.buildPlus ++                              // Add the index to the array address
     "pushl %ebx\n" ++
