@@ -104,7 +104,7 @@ class CodegenVisitor(private val rootEnv: SymbolTable) extends Analysis.NodeVisi
   }
 
   override def postVisit(node: Expression.IntLiteral): Unit = {
-    node.setAttachedAssembly(builder.buildLoadImm(node.getVal.toString))
+    node.setAttachedAssembly(builder.buildLoadImm(Integer.toString(node.getVal)))
   }
 
   override def postVisit(node: Expression.CharLiteral): Unit = {
@@ -313,7 +313,8 @@ class CodegenVisitor(private val rootEnv: SymbolTable) extends Analysis.NodeVisi
         case _: CharStackArray_T | _: IntStackArray_T =>  builder.buildLoadEff(s"${mapping.frameOffset}(%ebp)")
         case _ =>                                         builder.buildLoad(s"${mapping.frameOffset}(%ebp)")
       }) ++
-    "call free\n" ++     // Call the free function
+    builder.buildPush() ++
+    "call free\n" ++         // Call the free function
     "addl $4,%esp\n"         // Cleanup the parameter on the stack
 
     node.setAttachedAssembly(tmp)

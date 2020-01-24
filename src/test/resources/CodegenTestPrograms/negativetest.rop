@@ -1,0 +1,36 @@
+/* The output on stdout should be repeating True,False,True,...,
+ */
+int main(int argc, char[][] argv) {
+
+    print(2 + 2 < 2 + 3);   // True
+    print(',');
+    print(2 + 3 < 2 + 2);   // False
+    print(',');
+    print(2 + 2 <= 2 + 3);  // True
+    print(',');
+    print(2 + 3 <= 2 + 2);  // False
+    print(',');
+    print(2 + 3 <= 2 + 3);  // True
+    print(',');
+    print(2 + 2 > 2 + 3);   // False
+    print(',');
+    print(2 + 3 > 2 + 2);   // True
+    print(',');
+    print(2 + 2 >= 2 + 3);  // False
+    print(',');
+    print(2 + 3 >= 2 + 2);  // True
+    print(',');
+    print(2 + 2 >= 2 + 3);  // False
+    print(',');
+    print(2 + 3 == 2 + 3);  // True
+    print(',');
+    print(2 + 2 == 2 + 3);  // False
+    print(',');
+    print(2 + 2 != 2 + 3);  // True
+    print(',');
+    print(2 + 3 != 2 + 3);  // False
+
+    print('\n');
+
+    return 0;
+}

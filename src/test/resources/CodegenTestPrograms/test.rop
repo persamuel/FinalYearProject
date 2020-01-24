@@ -1,15 +1,17 @@
 int main(int argc, char[][] argv) {
-    char[] tmp;
+    int[] tmp;
+    int i;
+    tmp = new int[3];
 
-    tmp = new char[3];
+    tmp[0] = 1;
+    tmp[1] = 2;
+    tmp[2] = 3;
 
-    tmp[0] = 'h';
-    tmp[1] = 'i';
-    tmp[2] = '\0';
-
-    print(tmp);
-    print('\n');
-    print(argv[0]);
+    i = 0;
+    while (i < 3) {
+        print(tmp[i]);
+        i = i + 1;
+    }
     print('\n');
 
     free tmp;
