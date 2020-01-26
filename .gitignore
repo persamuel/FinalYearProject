@@ -16,3 +16,5 @@ build.sbt
 
 project/
 /out/
+
+src/main/java/META-INF/
