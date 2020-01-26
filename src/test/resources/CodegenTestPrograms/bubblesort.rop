@@ -1,7 +1,7 @@
 int bubblesort(int[] A, int n);
 int printarray(int[] A, int n);
 
-/* The output on stdout should be 120,240,360,480,600
+/* The output on stdout should be 120,240,360,480,600,720
  */
 int main(int argc, char[][] argv) {
     int[3] stack;
@@ -16,13 +16,17 @@ int main(int argc, char[][] argv) {
     tmp = printarray(stack, 3);
 	print(',');
 
-    heap = new int[2];
+    heap = new int[3];
 
-    heap[0] = 600;
-    heap[1] = 480;
+    heap[0] = 720;
+    heap[1] = 600;
+    heap[2] = 480;
+
 
     tmp = bubblesort(heap, 3);
-    tmp = printarray(heap, 2);
+    tmp = printarray(heap, 3);
+
+    print('\n');
 
     free heap;
 

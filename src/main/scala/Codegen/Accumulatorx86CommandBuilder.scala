@@ -40,7 +40,7 @@ class Accumulatorx86CommandBuilder {
    * Loads a byte from the provided location into the accumulator
    */
   def buildLoadByte(loc: String): String = {
-    s"movb $loc,%eax\n"
+    s"movzx $loc,%eax\n"
   }
 
   /**
@@ -101,10 +101,10 @@ class Accumulatorx86CommandBuilder {
 
     "cmp (%esp),%eax\n" ++  // Compare the accumulator and the top of the stack
     s"$op $truepath\n" ++   // Jump based on the operator chosen
-    "movb $0,%eax\n" ++     // Put false in the accumulator if comparison didn't succeed
+    "movb $0,%al\n" ++      // Put false in the accumulator if comparison didn't succeed
     s"jmp $cleanup\n" ++
     s"$truepath:\n" ++
-    "movb $255,%eax\n" ++   // Put true in the accumulator if comparison succeeded
+    "movb $255,%al\n" ++    // Put true in the accumulator if comparison succeeded
     s"$cleanup:\n" ++
     "addl $4,%esp\n"        // Cleanup the stack
   }
@@ -120,7 +120,7 @@ class Accumulatorx86CommandBuilder {
    * Jumps to location if accumulator holds true.
    */
   def buildJumpTrue(loc: String): String = {
-    "cmpb $255,%eax\n" ++     // Compares true with the content of the accumulator
+    "cmpb $255,%al\n" ++     // Compares true with the content of the accumulator
     s"je $loc\n"              // Jumps to location
   }
 

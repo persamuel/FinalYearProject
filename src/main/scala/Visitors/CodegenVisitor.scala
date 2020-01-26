@@ -297,7 +297,7 @@ class CodegenVisitor(private val rootEnv: SymbolTable) extends Analysis.NodeVisi
     "movl %eax,%ebx\n" ++
     node.getVal.getAttachedAssembly ++
       (arrayType match {
-        case _: CharHeapArray_T | _: CharStackArray_T =>  "movb %eax,(%ebx)\n"
+        case _: CharHeapArray_T | _: CharStackArray_T =>  "movb %al,(%ebx)\n"
         case _ =>                                         "movl %eax,(%ebx)\n"
       }) ++
     "popl %ebx\n"

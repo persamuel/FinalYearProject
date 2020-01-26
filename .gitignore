@@ -15,3 +15,4 @@ build.sbt
 .idea/
 
 project/
+/out/
