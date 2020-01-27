@@ -5,7 +5,8 @@ int decconvert(char[] s);
 /* The output on stdout should be the decimal equivalent of the two binary numbers passed as arguments.
  */
 int main(int argc, char[][] argv) {
-    print(binaryadd(argv[0], argv[1]));
+    print(binaryadd(argv[1], argv[2]));
+    print('\n');
     return 0;
 }
 

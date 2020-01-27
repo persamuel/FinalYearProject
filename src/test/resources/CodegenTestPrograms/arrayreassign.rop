@@ -3,7 +3,7 @@
 int main(int argc, char[][] argv) {
     char[] s;
 
-    s = argv[0];
+    s = argv[1];
 
     print(s);
 
@@ -23,7 +23,8 @@ int main(int argc, char[][] argv) {
     s[11] = '!';
     s[12] = '\0';
 
-    print(s)
+    print(s);
+    print('\n');
 
     free s;
 

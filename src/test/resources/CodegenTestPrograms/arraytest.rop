@@ -27,6 +27,8 @@ int main(int argc, char[][] argv) {
     heap[4] = 10;
     print(heap[4]);
 
+    print('\n');
+
     free heap;
 
     return 0;

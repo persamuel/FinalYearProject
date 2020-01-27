@@ -2,5 +2,6 @@
  */
 int main(int argc, char[][] argv) {
     print(8 + 5);
+    print('\n');
     return 0;
 }
