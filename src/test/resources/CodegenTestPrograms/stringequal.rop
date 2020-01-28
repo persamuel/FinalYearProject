@@ -4,7 +4,7 @@ int stringlength(char[] s);
 /* The output on stdout should be True or False depending on the args passed in
  */
 int main(int argc, char[][] argv) {
-    print(stringequal(argv[0], argv[1]));
+    print(stringequal(argv[1], argv[2]));
     return 0;
 }
 

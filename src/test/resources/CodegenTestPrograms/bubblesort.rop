@@ -22,11 +22,8 @@ int main(int argc, char[][] argv) {
     heap[1] = 600;
     heap[2] = 480;
 
-
     tmp = bubblesort(heap, 3);
     tmp = printarray(heap, 3);
-
-    print('\n');
 
     free heap;
 

@@ -19,6 +19,7 @@ int main(int argc, char[][] argv) {
     print(false || false);  // False
     print(',');
     print(!true);           // False
+    print(',');
     print(!false);          // True
 
     return 0;

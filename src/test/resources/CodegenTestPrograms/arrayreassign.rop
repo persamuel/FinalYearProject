@@ -1,4 +1,4 @@
-/* The output on stdout should be the first argument passed ++ Hello World!
+/* The output on stdout should be the first argument passed ++ World!
  */
 int main(int argc, char[][] argv) {
     char[] s;
@@ -7,24 +7,17 @@ int main(int argc, char[][] argv) {
 
     print(s);
 
-    s = new char[12];
+    s = new char[7];
 
-    s[0] = 'H';
-    s[1] = 'e';
-    s[2] = 'l';
+    s[0] = 'W';
+    s[1] = 'o';
+    s[2] = 'r';
     s[3] = 'l';
-    s[4] = 'o';
-    s[5] = ' ';
-    s[6] = 'W';
-    s[7] = 'o';
-    s[8] = 'r';
-    s[9] = 'l';
-    s[10] = 'd';
-    s[11] = '!';
-    s[12] = '\0';
+    s[4] = 'd';
+    s[5] = '!';
+    s[6] = '\0';
 
     print(s);
-    print('\n');
 
     free s;
 

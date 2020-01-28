@@ -172,6 +172,6 @@ class Accumulatorx86CommandBuilder {
    * Negates what's in the accumulator.
    */
   def buildNegate(): String = {
-    "negl %eax"
+    "not %eax\n"
   }
 }

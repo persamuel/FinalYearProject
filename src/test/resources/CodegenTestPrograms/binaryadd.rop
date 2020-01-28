@@ -1,4 +1,4 @@
-int binaryadd(char s1[], char s2[]);
+int binaryadd(char[] s1, char[] s2);
 int stringlength(char[] s);
 int decconvert(char[] s);
 
@@ -6,12 +6,11 @@ int decconvert(char[] s);
  */
 int main(int argc, char[][] argv) {
     print(binaryadd(argv[1], argv[2]));
-    print('\n');
     return 0;
 }
 
-int binaryadd(char s1[], char s2[]) {
-    return decconvert(s1) + deconvert(s2);
+int binaryadd(char[] s1, char[] s2) {
+    return decconvert(s1) + decconvert(s2);
 }
 
 int decconvert(char[] s) {

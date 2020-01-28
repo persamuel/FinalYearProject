@@ -12,6 +12,7 @@ int main(int argc, char[][] argv) {
     stack[2] = 360;
 
     tmp = printarray(stack, 3);
+    print(',');
 
     heap = new int[2];
 

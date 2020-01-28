@@ -1,8 +1,8 @@
-/* The output on stdout should be Y
+/* The output on stdout should be N
  */
 int main(int argc, char[][] argv) {
 
-    if (true) {
+    if (false) {
         print('Y');
     } else {
         print('N');

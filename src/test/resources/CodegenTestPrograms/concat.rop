@@ -6,8 +6,9 @@ int stringlength(char[] s);
 int main(int argc, char[][] argv) {
     char[] tmp;
 
-    tmp = concat(argv[0], argv[1]);
+    tmp = concat(argv[1], argv[2]);
     print(tmp);
+    print('\n');
     free tmp;
 
     return 0;
@@ -40,7 +41,7 @@ char[] concat(char[] s1, char[] s2) {
         i = i + 1;
     }
 
-    tmp[j] = 0;
+    tmp[j] = '\0';
 
     return tmp;
 }

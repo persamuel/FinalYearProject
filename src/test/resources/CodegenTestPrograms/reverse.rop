@@ -7,7 +7,7 @@ int main(int argc, char[][] argv) {
     int i;
     char[] tmp;
 
-    i = 0;
+    i = 1;
     while (i < argc) {
         tmp = reverse(argv[i]);
         print(tmp);

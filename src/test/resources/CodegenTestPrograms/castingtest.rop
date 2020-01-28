@@ -1,4 +1,4 @@
-/* The output on stdout should be 65,B,66,D
+/* The output on stdout should be 65,B,67,D
  */
 int main(int argc, char[][] argv) {
     char c;

@@ -330,7 +330,7 @@ class TypeCheckVisitor extends NodeVisitor {
       throw TypeCheckingException(s"Error: Can't reassign stack array ${node.getName}.")
 
     if (mapping.get.theType.getClass != node.getVal.getAttachedType.getClass) {
-      (mapping.get.theType, assignmentType) match {
+      (mapping.get.theType, assignmentType) match { // todo: Allow assignment of stack arrays to heap arrays
         case (_: Int_T, _: Char_T) | (_: Char_T, _: Int_T) => node.setAttachedType(new Unit_T) // Can cast ints to chars
         case _                                             => throw TypeCheckingException(s"Error: Unable to assign ${node.getVal.toString} to ${node.getName} in ${node.toString}.")
       }

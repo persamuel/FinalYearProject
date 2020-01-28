@@ -23,7 +23,7 @@ int quotient(int dividend, int divisor) {
     int x;
 
     i = 0;
-    x = divisor;
+    x = 0;
     while ((x + divisor) < dividend) {
         x = x + divisor;
         i = i + 1;

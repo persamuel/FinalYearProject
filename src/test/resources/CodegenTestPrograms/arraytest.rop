@@ -3,7 +3,8 @@
 int main(int argc, char[][] argv) {
     int[5] stack;
     int[] heap;
-    heap = new heap[5];
+
+    heap = new int[5];
 
     stack[0] = 1;
     print(stack[0]);
@@ -26,8 +27,6 @@ int main(int argc, char[][] argv) {
     print(heap[3]);
     heap[4] = 10;
     print(heap[4]);
-
-    print('\n');
 
     free heap;
 
