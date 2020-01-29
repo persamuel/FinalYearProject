@@ -4,6 +4,7 @@ import Lexer.Lexer
 import Node.Program
 import Parser.Parser
 import Visitors.TypeCheckVisitor
+/*
 import org.junit._
 import org.junit.Assert.assertEquals
 
@@ -19,3 +20,4 @@ class TypeCheckTester {
     print("hello")
   }
 }
+ */
