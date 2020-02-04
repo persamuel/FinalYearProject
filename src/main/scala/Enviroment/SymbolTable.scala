@@ -50,9 +50,11 @@ class SymbolTable(val funcType: MyType, val funcName: String) {
   def lookupCategory(name: String) = {
     if (functions.contains(name)) {
       FUNCTION
-    } else if (parameters.contains(name)) {
+    }
+    else if (parameters.contains(name)) {
       PARAMETER
-    } else {
+    }
+    else {
       LOCAL
     }
   }
