@@ -36,10 +36,12 @@ object Compiler {
         out = new PrintWriter(args(2))
 
         out.write(code)
-      } catch {
+      }
+      catch {
         case fne: FileNotFoundException => System.err.println(s"Error: Couldn't open file $args(0)")
         case e: Exception => System.err.println(e.getMessage)
-      } finally {
+      }
+      finally {
         in.close()
         out.close()
       }

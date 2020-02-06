@@ -14,7 +14,7 @@ compile_and_test_stdout () {
 	filename=$2
 	stripped="${filename%%.*}"
 	args=$3
-	expected=$4
+	expectedpat=$4
 
 	java -jar $COMPILER_JAR $filename -o "${stripped}.s"
 	as "${stripped}.s" -o "${stripped}.o"
@@ -22,7 +22,7 @@ compile_and_test_stdout () {
 
 	out="$(./$stripped $args)"
 
-	if [ "$out" = "$expected" ]; then
+	if [[ $out =~ $expectedpat ]]; then
 		echo "PASSED $stripped test number: $testnumber"
 	else
 		echo "FAILED $stripped test number: $testnumber"
@@ -33,6 +33,8 @@ compile_and_test_stdout () {
 
 compile_and_test_stdout 1 "addtest.rop" "" "13"
 compile_and_test_stdout 1 "arrayreassign.rop" "Hello" "HelloWorld!"
+compile_and_test_stdout 1 "arrayreassign2.rop" "" "Hello!"
+compile_and_test_stdout 1 "arrayreassign3.rop" "" "1,2,3,4,5"
 compile_and_test_stdout 1 "arraytest.rop" "" "12345678910"
 compile_and_test_stdout 1 "binaryadd.rop" "101 010" "7"
 compile_and_test_stdout 1 "bubblesort.rop" "" "120,240,360,480,600,720"
@@ -43,6 +45,7 @@ compile_and_test_stdout 1 "concat.rop" "hello world" "helloworld"
 compile_and_test_stdout 1 "echotest.rop" "hello world !" "helloworld!"
 compile_and_test_stdout 1 "factorial.rop" "" "120"
 compile_and_test_stdout 1 "fibonacci.rop" "" "34"
+compile_and_test_stdout 1 "fizzbuzz.rop" "" "0:fb 1: 2: 3:f 4: 5:b 6:f 7: 8: 9:f 10:b 11: 12:f 13: 14: 15:fb 16: 17: 18:f 19: 20:b 21:f 22: 23: 24:f 25:b 26: 27:f 28: 29: 30:fb "
 compile_and_test_stdout 1 "helloworld.rop" "" "Hello World!"
 compile_and_test_stdout 1 "iftest.rop" "" "Y"
 compile_and_test_stdout 1 "iftest2.rop" "" "N"
@@ -56,6 +59,7 @@ compile_and_test_stdout 1 "palindrome.rop" "tacocat" "True"
 compile_and_test_stdout 2 "palindrome.rop" "tacoca" "False"
 compile_and_test_stdout 1 "power.rop" "" "9"
 compile_and_test_stdout 1 "printarray.rop" "" "120,240,360,480,600"
+compile_and_test_stdout 1 "printarrptr.rop" "" "(0x[0-9a-fA-F]+){2}"
 compile_and_test_stdout 1 "product.rop" "" "560,3360"
 compile_and_test_stdout 1 "quotient.rop" "" "6,1"
 compile_and_test_stdout 1 "reverse.rop" "hello" "olleh"
@@ -66,6 +70,3 @@ compile_and_test_stdout 1 "stringtoint.rop" "34" "34"
 compile_and_test_stdout 1 "subtest.rop" "" "3"
 compile_and_test_stdout 1 "sum.rop" "" "15,21"
 compile_and_test_stdout 1 "whiletest.rop" "" "0123456789"
-
-
-

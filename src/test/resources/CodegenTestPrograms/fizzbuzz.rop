@@ -1,12 +1,42 @@
+int fizzbuzz(int n);
 int quotient(int numerator, int denominator);
 int remainder(int numerator, int denominator);
 
-/* The output on stdout should be 6,1
- */
 int main(int argc, char[][] argv) {
-    print(quotient(25, 4));
-    print(',');
-    print(remainder(25, 4));
+    int tmp;
+
+    tmp = fizzbuzz(30);
+
+    return 0;
+}
+
+int fizzbuzz(int n) {
+    int x;
+
+    x = 0;
+    while(x <= n) {
+        print(x);
+        print(':');
+
+        if (remainder(x,3) == 0) {
+            print('f');
+        }
+        else {
+            x = x;
+        }
+
+        if (remainder(x,5) == 0) {
+            print('b');
+        }
+        else {
+           x = x;
+        }
+
+        print(' ');
+
+        x = x + 1;
+    }
+
     return 0;
 }
 

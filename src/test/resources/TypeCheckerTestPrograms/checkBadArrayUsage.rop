@@ -1,0 +1,8 @@
+// Shouldn't pass the type checker
+int main(int argc, char[][] argv) {
+    boolean b;
+
+    b = 5 && argv;
+
+    return 0;
+}

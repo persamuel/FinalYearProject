@@ -73,7 +73,8 @@ class TypeCheckVisitor extends NodeVisitor {
     node.getName.getAttachedType match {
       case _: CharStackArray_T | _: CharHeapArray_T => node.setAttachedType(new Char_T)
       case _: IntStackArray_T | _: IntHeapArray_T   => node.setAttachedType(new Int_T)
-      case _: StringArray_T                         => node.setAttachedType(new CharHeapArray_T) // todo: Check usage of StringArray_T
+      case _: StringArray_T                         => node.setAttachedType(new CharHeapArray_T)
+      case _: StringArray_T                         => node.setAttachedType(new CharHeapArray_T)
       case _                                        => throw TypeCheckingException(s"Error: Identifier ${node.getName.toString} in ${node.toString} is not an array type.")
     }
   }
@@ -330,8 +331,10 @@ class TypeCheckVisitor extends NodeVisitor {
       throw TypeCheckingException(s"Error: Can't reassign stack array ${node.getName}.")
 
     if (mapping.get.theType.getClass != node.getVal.getAttachedType.getClass) {
-      (mapping.get.theType, assignmentType) match { // todo: Allow assignment of stack arrays to heap arrays
+      (mapping.get.theType, assignmentType) match {
         case (_: Int_T, _: Char_T) | (_: Char_T, _: Int_T) => node.setAttachedType(new Unit_T) // Can cast ints to chars
+        case (_: CharHeapArray_T, _: CharStackArray_T)     => node.setAttachedType(new Unit_T)
+        case (_: IntHeapArray_T, _: IntStackArray_T)       => node.setAttachedType(new Unit_T)
         case _                                             => throw TypeCheckingException(s"Error: Unable to assign ${node.getVal.toString} to ${node.getName} in ${node.toString}.")
       }
     }
@@ -356,7 +359,7 @@ class TypeCheckVisitor extends NodeVisitor {
       case (_: CharStackArray_T, _: Int_T) | (_: CharHeapArray_T, _: Int_T)   => node.setAttachedType(new Unit_T)
       case (_: IntStackArray_T, _: Int_T) | (_: IntHeapArray_T, _: Int_T)     => node.setAttachedType(new Unit_T)
       case (_: IntStackArray_T, _: Char_T) | (_: IntHeapArray_T, _: Char_T)   => node.setAttachedType(new Unit_T)
-      case (_: StringArray_T, _: CharHeapArray_T)                             => node.setAttachedType(new Unit_T) // todo: Check usage of StringArray_T
+      case (_: StringArray_T, _: CharHeapArray_T)                             => node.setAttachedType(new Unit_T)
       case _                                                                  => throw TypeCheckingException(s"Error: Types do not match in assignment ${node.toString}.")
     }
   }

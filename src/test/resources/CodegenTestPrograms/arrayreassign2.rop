@@ -1,0 +1,20 @@
+/* The output on stdout should be Hello!
+ */
+int main(int argc, char[][] argv) {
+    char[7] s1;
+    char[] s2;
+
+    s2 = s1;
+
+    s2[0] = 'H';
+    s2[1] = 'e';
+    s2[2] = 'l';
+    s2[3] = 'l';
+    s2[4] = 'o';
+    s2[5] = '!';
+    s2[6] = '\0';
+
+    print(s2);
+
+    return 0;
+}

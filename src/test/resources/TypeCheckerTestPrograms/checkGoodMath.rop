@@ -1,0 +1,8 @@
+int main(int argc, char[][] argv) {
+    int x;
+    int y;
+
+    x = 5 + 5;
+
+    return 0;
+}

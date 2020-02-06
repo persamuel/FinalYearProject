@@ -1,0 +1,13 @@
+int main(int argc, char[][] argv) {
+    int[3] stack;
+    int[] heap;
+
+    heap = new int[3];
+
+    print(stack);
+    print(heap);
+
+    free heap;
+
+    return 0;
+}
