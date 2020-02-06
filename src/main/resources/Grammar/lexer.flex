@@ -103,7 +103,7 @@ ASCIICharacterLiteral 	= \'[[!-~ ]--[\'\\]]\'
 	\' \\t \'                   { return symbol(sym.CHARACTER_LITERAL, '\t'); }
 	\' \\0 \'                   { return symbol(sym.CHARACTER_LITERAL, '\0'); }
 	\' \\' \'                   { return symbol(sym.CHARACTER_LITERAL, '\''); }
-	\' \\\\ \'                   { return symbol(sym.CHARACTER_LITERAL, '\\'); }
+	\' \\\\ \'                  { return symbol(sym.CHARACTER_LITERAL, '\\'); }
 
 	{IntegerLiteral}			{ return symbol(sym.INTEGER_LITERAL, Integer.parseInt(yytext())); }
 	
@@ -117,4 +117,4 @@ ASCIICharacterLiteral 	= \'[[!-~ ]--[\'\\]]\'
 }
 
 /* Error Fallback */
-[^]                              { throw new Error("Illegal character <"+yytext()+">"); }
+[^]                             { throw new Error("Illegal character <"+yytext()+">"); }
