@@ -1,0 +1,14 @@
+boolean test(int x);
+
+// Should pass the type checker
+int main(int argc, char[][] argv) {
+    boolean x;
+
+    x = test(5);
+
+    return 0;
+}
+
+boolean test(int x) {
+    return true;
+}

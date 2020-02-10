@@ -37,7 +37,9 @@ public abstract class Statement extends Node {
                 str += "; ";
             }
 
-            str += stms.get(stms.size() - 1);
+            if (!stms.isEmpty())
+                str += stms.get(stms.size() - 1);
+
             str += " }";
 
             return str;

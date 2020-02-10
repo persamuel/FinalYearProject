@@ -1,0 +1,22 @@
+int test(char[] x);
+
+// Shouldn't pass the type checker
+int main(int argc, char[][] argv) {
+
+    return 0;
+}
+
+int main(int argc, char[][] argv) {
+
+    return 0;
+}
+
+int test(char[] x) {
+    char[] tmp;
+    int tmp;
+
+    tmp = x;
+
+    return 0;
+}
+

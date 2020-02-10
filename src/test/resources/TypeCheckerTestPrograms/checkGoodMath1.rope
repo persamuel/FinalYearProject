@@ -1,8 +1,10 @@
-// Shouldn't pass the type checker
 int main(int argc, char[][] argv) {
     int x;
+    int y;
 
-    x = true + true;
+    x = 5 + 5;
+
+    y = x + (x + 3);
 
     return 0;
 }

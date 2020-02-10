@@ -19,7 +19,7 @@ class SymbolTable(val funcType: MyType, val funcName: String) {
 
   def add(name: String, theType: MyType, category: SymbolCategory) = {
     if (table.contains(name)) {
-      throw RedefinitionException("Error: Redefinition of name \"" + name + "\" which is already in scope")
+      throw RedefinitionException(s"Error: Redefinition of $name which is already in scope")
     }
     else {
       category match {

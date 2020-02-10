@@ -2,14 +2,18 @@ int test(char[] x);
 
 // Should pass the type checker
 int main(int argc, char[][] argv) {
+    char[] arr;
+    int tmp;
+
+    tmp = test(arr);
 
     return 0;
 }
 
 int test(char[] x) {
-    char[] test;
+    char[] tmp;
 
-    test = x;
+    tmp = x;
 
     return 0;
 }

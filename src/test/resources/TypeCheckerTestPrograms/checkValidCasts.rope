@@ -1,0 +1,15 @@
+// Should pass the type checker
+int main(int argc, char[][] argv) {
+    int tmp;
+    int x;
+    char c;
+
+    x = 'a';
+    c = 49;
+
+    tmp = x;
+    x = c;
+    c = tmp;
+
+    return 0;
+}

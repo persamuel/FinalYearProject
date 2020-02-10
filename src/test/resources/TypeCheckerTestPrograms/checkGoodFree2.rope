@@ -1,0 +1,8 @@
+// Should pass the type checker
+int main(int argc, char[][] argv) {
+    char[] x;
+
+    free x;
+
+    return 0;
+}

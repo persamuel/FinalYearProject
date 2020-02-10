@@ -1,0 +1,18 @@
+int test(boolean b);
+
+// Should pass the type checker
+int main(int argc, char[][] argv) {
+    int tmp;
+
+    tmp = test(true);
+
+    return 0;
+}
+
+int test(boolean b) {
+    boolean tmp;
+
+    tmp = b;
+
+    return 0;
+}

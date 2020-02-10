@@ -49,7 +49,9 @@ public class FunctionSignature extends Node {
             str += ", ";
         }
 
-        str += args.get(args.size() - 1);
+        if (!args.isEmpty())
+            str += args.get(args.size() - 1);
+
         str += ')';
 
         return str;

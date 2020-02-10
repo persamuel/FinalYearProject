@@ -1,16 +1,18 @@
-int test1(int x);
-int test2(int x);
+int test(int x);
 
 // Should pass the type checker
 int main(int argc, char[][] argv) {
+    int tmp;
+
+    tmp = test(5);
 
     return 0;
 }
 
-int test2(int x) {
-    return 0;
-}
+int test(int x) {
+    int tmp;
 
-int test1(int x) {
+    tmp = x;
+
     return 0;
 }

@@ -231,7 +231,8 @@ class TypeCheckVisitor extends NodeVisitor {
     checkArgumentsMatch(expected, actual, node.toString)
 
     currentEnv = env
-    decls.remove(node.getName) // Mark this function as defined
+    if (!decls.remove(node.getName)) // Mark this function as defined
+      throw RedefinitionException(s"Error: Redefinition of ${node.getName} which is already in scope")
   }
 
   override def preVisit(node: MainFunction): Boolean = {

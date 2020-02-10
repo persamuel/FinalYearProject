@@ -1,0 +1,15 @@
+int test(int x, boolean b, char c);
+
+// Shouldn't pass the type checker
+int main(int argc, char[][] argv) {
+    int x;
+    char[] arr;
+
+    x = test(5, 5, 5);
+
+    return 0;
+}
+
+int test(int x, boolean b, char c) {
+    return 0;
+}

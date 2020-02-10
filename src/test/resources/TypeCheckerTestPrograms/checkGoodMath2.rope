@@ -4,5 +4,7 @@ int main(int argc, char[][] argv) {
 
     x = 5 + 5;
 
+    y = (x + 3) + x;
+
     return 0;
 }

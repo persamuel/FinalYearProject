@@ -1,0 +1,19 @@
+int test(int[] x);
+
+// Should pass the type checker
+int main(int argc, char[][] argv) {
+    int[] arr;
+    int tmp;
+
+    tmp = test(arr);
+
+    return 0;
+}
+
+int test(int[] x) {
+    int[] tmp;
+
+    tmp = x;
+
+    return 0;
+}

@@ -1,6 +1,6 @@
 // Shouldn't pass the type checker
 int main(int argc, char[][] argv) {
-    char[] tmp;
+    int[] tmp;
 
     tmp = argv[0];
 

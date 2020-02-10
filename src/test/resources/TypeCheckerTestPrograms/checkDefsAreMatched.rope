@@ -1,0 +1,12 @@
+int test1(int x);
+int test2(int x);
+
+// Shouldn't pass the type checker
+int main(int argc, char[][] argv) {
+
+    return 0;
+}
+
+int test2(int x) {
+    return 0;
+}

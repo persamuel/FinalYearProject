@@ -1,15 +1,14 @@
-int test(char[] x);
+char test(int x);
 
 // Should pass the type checker
 int main(int argc, char[][] argv) {
+    char x;
+
+    x = test(5);
 
     return 0;
 }
 
-int test(char[] x) {
-    char[] test;
-
-    test = x;
-
-    return 0;
+char test(int x) {
+    return 'a';
 }

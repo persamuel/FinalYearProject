@@ -1,4 +1,4 @@
-int test(char[5] s);
+int test(char[] x);
 
 // Shouldn't pass the type checker
 int main(int argc, char[][] argv) {
@@ -6,6 +6,12 @@ int main(int argc, char[][] argv) {
     return 0;
 }
 
-int test(char[5] s) {
+int test(char[] x) {
+
+    return 0;
+}
+
+int test(char[] x) {
+
     return 0;
 }

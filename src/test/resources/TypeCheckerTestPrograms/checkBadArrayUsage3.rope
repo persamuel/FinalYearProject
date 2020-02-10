@@ -1,8 +1,9 @@
 // Shouldn't pass the type checker
 int main(int argc, char[][] argv) {
-    char[] tmp;
+    int[3] arr;
+    int x;
 
-    tmp = argv[0];
+    x = 5 + arr;
 
     return 0;
 }

@@ -1,8 +1,13 @@
 // Shouldn't pass the type checker
 int main(int argc, char[][] argv) {
-    char[] tmp;
+    int x;
+    boolean b;
 
-    tmp = argv[0];
+    x = 0;
+    b = true;
+
+    x = b;
+    b = x;
 
     return 0;
 }
