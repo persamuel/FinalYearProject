@@ -22,14 +22,14 @@ int fizzbuzz(int n) {
             print('f');
         }
         else {
-            \\ Do nothing
+            x = x;
         }
 
         if (remainder(x,5) == 0) {
             print('b');
         }
         else {
-            \\ Do nothing
+           x = x;
         }
 
         print(' ');
