@@ -43,8 +43,9 @@ int max(int[] A, int n) {
     while (i < n) {
         if (A[i] > max)
             max = A[i];
-        else
-            i = i; // Do nothing.
+        else {
+            // Do nothing.
+        }
         i = i + 1;
     }
 

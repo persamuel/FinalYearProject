@@ -36,7 +36,7 @@ Comment				    = {LineComment} | {BlockComment}
 LineComment			    = "//" {InputCharacter}* {EOL}?
 BlockComment		    = "/*" [^*] ~"*/" | "/*" "*"+ "/"
 
-Identifier 			    = [:jletter:] [:jletterdigit:]*
+Identifier 			    = [:jletter:][:jletterdigit:]*
 IntegerLiteral 		    = 0 | [1-9][0-9]*
 /* Any 1 byte printable ascii character except ' and \ which must be escaped */
 ASCIICharacterLiteral 	= \'[[!-~ ]--[\'\\]]\'

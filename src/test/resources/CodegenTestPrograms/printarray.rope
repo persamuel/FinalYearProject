@@ -35,8 +35,9 @@ int printarray(int[] A, int n) {
         i = i + 1;
         if (i < n)
             print(',');
-        else
-            i = i; // Do nothing
+        else {
+            // Do nothing
+        }
     }
 
     return 1;

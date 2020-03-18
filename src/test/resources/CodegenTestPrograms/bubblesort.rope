@@ -39,8 +39,9 @@ int printarray(int[] A, int n) {
         i = i + 1;
         if (i < n)
             print(',');
-        else
-            i = i;
+        else {
+            // Do nothing
+        }
     }
 
     return 1;
@@ -60,7 +61,7 @@ int bubblesort(int[] A, int n) {
                 A[j] = A[j + 1];
                 A[j + 1] = tmp;
             } else {
-                j = j; // Do nothing
+                // Do nothing
             }
             j = j + 1;
         }

