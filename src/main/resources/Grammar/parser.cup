@@ -115,7 +115,7 @@ variable_declaration_list	::= variable_declaration_list:vars variable_declaratio
 								|                                                                                   {: RESULT = new LinkedList<VariableDeclaration>(); :}
 								;
 
-statement					::= LBRACE statement_list:stms RBRACE                                                   {: RESULT = new Statement.Compound(stms); :}
+statement					::= LBRACE statements:stms RBRACE                                                   {: RESULT = new Statement.Compound(stms); :}
 								| IF LPAREN expression:cond RPAREN statement:then ELSE statement:els                {: RESULT = new Statement.IfThenElse(cond, then, els); :}
 								| WHILE LPAREN expression:cond RPAREN statement:body                                {: RESULT = new Statement.While(cond, body); :}
 								| IDENTIFIER:id EQ expression:val SEMICOLON                                         {: RESULT = new Statement.Assign(id, val); :}

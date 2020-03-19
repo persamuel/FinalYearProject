@@ -27,7 +27,7 @@ int decconvert(char[] s) {
         if (s[i] == '1') {
             b = b + pow;
         } else {
-            i = i; // Do nothing
+            // Do nothing
         }
 
         pow = pow * 2;

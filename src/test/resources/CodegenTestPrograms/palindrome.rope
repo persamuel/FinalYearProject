@@ -38,8 +38,9 @@ boolean stringequal(char[] s1, char[] s2) {
         while (x && i < n) {
             if (s1[i] != s2[i])
                 x = false;
-            else
-                i = i; // Do nothing
+            else {
+                // Do nothing
+            }
             i = i + 1;
         }
     } else {
